@@ -1,0 +1,37 @@
+appId: com.dingdingprojects.materialrouter
+productName: Material Router
+copyright: Copyright (c) 2026 Ding-Ding-Projects contributors
+
+directories:
+  output: dist
+
+files:
+  - app/**/*
+  - docs/articles/**/*
+  - build/icons/**/*
+
+extraResources:
+  - from: docs/articles
+    to: articles
+
+win:
+  icon: build/icons/icon.ico
+  artifactName: ${productName}-${version}-Setup.${ext}
+  target:
+    - target: squirrel
+      arch:
+        - x64
+
+squirrelWindows:
+  iconUrl: https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png
+
+# Code signing is permanently out of scope for this project. The produced
+# installer is unsigned; Windows may show an unknown-publisher / SmartScreen
+# warning on first run. Keep this false explicitly rather than relying on a
+# default that a future builder version could flip.
+forceCodeSigning: false
+
+publish:
+  provider: github
+  owner: Ding-Ding-Projects
+  repo: material-router

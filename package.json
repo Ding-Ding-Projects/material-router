@@ -1,0 +1,27 @@
+{
+  "name": "material-router",
+  "productName": "Material Router",
+  "version": "0.1.0",
+  "description": "Bring-your-own-key AI router with OpenAI- and Anthropic-compatible local endpoints and a fully GUI-driven API builder.",
+  "type": "module",
+  "main": "app/main/main.js",
+  "author": "Ding-Ding-Projects",
+  "license": "MIT",
+  "homepage": "https://github.com/Ding-Ding-Projects/material-router#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ding-Ding-Projects/material-router.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win squirrel",
+    "icons": "node scripts/generate-icons.mjs",
+    "docs-index": "node scripts/build-docs-index.mjs",
+    "count": "node scripts/count-lines.mjs"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "electron-builder-squirrel-windows": "^25.1.8"
+  }
+}

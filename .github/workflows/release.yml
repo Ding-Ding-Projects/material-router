@@ -1,0 +1,65 @@
+name: Release
+
+# Policy: GitHub Actions runs no tests and no lint. A workflow builds,
+# packages and publishes a release — that is the whole job. Nothing here may
+# gate the release on a code-quality verdict.
+#
+# TODO(plumbing-lane):
+#  - enforce unique monotonic release tags (never recycle a prior tag)
+#  - append the committed line-count table (npm run count) to the release notes
+#  - attach the required dim-sum photo asset from the public catalog release
+#  - record end-to-end workflow timing (startedAt -> publication) in the notes
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+# Release publishing is not idempotent: never cancel an in-flight run.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Idempotent: regenerates deterministic brand assets if missing/stale.
+      - name: Generate icons
+        run: node scripts/generate-icons.mjs
+
+      - name: Build and publish Squirrel installer
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win squirrel --publish always
+
+      # Safety net: collect build output even when a previous step fails so
+      # failed installers keep their evidence. Artifact upload never gates
+      # anything and never masks the original failure.
+      - name: Collect build artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: squirrel-windows
+          path: |
+            dist/squirrel-windows/**
+          if-no-files-found: warn
+          retention-days: 14
