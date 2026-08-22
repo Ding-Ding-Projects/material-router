@@ -1,0 +1,3 @@
+/* Docs browser tab styles (shared layout lives in core/shell.css).
+   Owned by Foundation Core; Utility lane extends. */
+.mr-docs-layout { min-height: 0; }

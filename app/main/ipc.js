@@ -4,7 +4,9 @@
 // Foundation seam: every lane registers handlers here via registerHandler().
 // Owned by Foundation Core lane.
 
-import { ipcMain, dialog, shell, BrowserWindow } from 'electron';
+import { ipcMain, dialog, shell, BrowserWindow, app } from 'electron';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /** Domains pre-registered for later lanes; unknown domains are rejected. */
 export const DOMAINS = Object.freeze([
@@ -18,6 +20,7 @@ export const DOMAINS = Object.freeze([
   'notify',
   'dialog',
   'shell',
+  'docs', // offline article browser (bundled docs/articles)
 ]);
 
 const INVOKE_CHANNEL = 'mr:invoke';
@@ -221,6 +224,48 @@ export function registerBuiltinHandlers({ settingsStore, vault, providersStore, 
       platform: process.platform,
       userDataPath: electronApp.getPath('userData'),
     };
+  });
+
+  // docs -----------------------------------------------------------------------
+  // The offline article browser reads its bundled manifest + articles through
+  // here (file:// fetch is CORS-blocked in the sandboxed renderer).
+  let articlesDirCache = null;
+  function articlesDir() {
+    if (articlesDirCache) return articlesDirCache;
+    const packaged = path.join(process.resourcesPath ?? '', 'articles');
+    if (fs.existsSync(packaged)) {
+      articlesDirCache = packaged;
+      return packaged;
+    }
+    articlesDirCache = path.join(app.getAppPath(), 'docs', 'articles');
+    return articlesDirCache;
+  }
+
+  function readManifest() {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(articlesDir(), 'index.json'), 'utf8'));
+    } catch {
+      return { generatedAt: null, count: 0, articles: [] };
+    }
+  }
+
+  function resolveArticleFile(idOrFile) {
+    const dir = articlesDir();
+    const safe = String(idOrFile).replace(/[\\/]/g, '');
+    for (const candidate of [safe, `${safe}.md`]) {
+      const full = path.join(dir, candidate);
+      if (path.dirname(full) === dir && fs.existsSync(full)) return full;
+    }
+    return null;
+  }
+
+  registerHandler('docs', 'list-articles', () => readManifest());
+  registerHandler('docs', 'read-article', ({ id } = {}) => {
+    const full = resolveArticleFile(id);
+    if (!full) throw new Error(`article "${id}" not found`);
+    const content = fs.readFileSync(full, 'utf8');
+    const titleMatch = /^#\s+(.+)$/m.exec(content);
+    return { id: String(id), title: titleMatch ? titleMatch[1] : String(id), content };
   });
 
   void hasHandler; // kept exported for lane-side assertions

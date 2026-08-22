@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Material Router</title>
+  <link rel="stylesheet" href="./src/core/tokens.css" />
+  <link rel="stylesheet" href="./src/core/shell.css" />
+  <link rel="stylesheet" href="./src/tabs/builder/builder.css" />
+  <link rel="stylesheet" href="./src/tabs/providers/providers.css" />
+  <link rel="stylesheet" href="./src/tabs/server/server.css" />
+  <link rel="stylesheet" href="./src/tabs/docs/docs.css" />
+  <link rel="stylesheet" href="./src/tabs/appearance/appearance.css" />
+  <link rel="stylesheet" href="./src/tabs/delight/delight.css" />
+  <link rel="stylesheet" href="./src/tabs/utility/utility.css" />
+  <link rel="stylesheet" href="./src/tabs/authenticator/authenticator.css" />
+</head>
+<body>
+  <div id="mr-app" data-dock="left">
+    <!-- titlebar, tab strip and content are built by src/app.js -->
+    <noscript>Material Router requires JavaScript to render its interface.</noscript>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
