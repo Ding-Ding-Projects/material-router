@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-22T18:25:58.678Z",
+  "generatedAt": "2026-08-22T19:47:59.640Z",
   "count": 6,
   "articles": [
     {
       "id": "api-builder",
       "file": "api-builder.md",
       "title": "API builder",
-      "summary": "The API builder will let you compose, save, and send AI requests entirely inside Material Router — no separate terminal client, no hand-edited JSON files."
+      "summary": "The API builder lets you compose, save, and send AI requests entirely inside Material Router — no separate terminal client, no hand-edited JSON files, and no typing configuratio..."
     },
     {
       "id": "appearance",
