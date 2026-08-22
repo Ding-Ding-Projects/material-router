@@ -1643,16 +1643,27 @@ function init(panel) {
   for (const [id, label] of defs) {
     const btn = h('button', {
       class: 'm3-tab', role: 'tab', dataset: { sub: id },
+      id: `mr-utility-tab-${id}`,
+      'aria-controls': `mr-utility-panel-${id}`,
       'aria-selected': id === 'converter' ? 'true' : 'false',
       tabindex: id === 'converter' ? '0' : '-1',
       onclick: () => switchSubTab(id),
       onkeydown: (e) => {
         const idx = defs.findIndex(([d]) => d === id);
+        // Arrow keys wrap; Home/End mirror the main strip's roving behaviour.
+        const go = (nextId) => {
+          switchSubTab(nextId);
+          subTabEls.__buttons.find((b) => b.dataset.sub === nextId)?.focus();
+        };
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
           e.preventDefault();
-          const next = defs[(idx + (e.key === 'ArrowRight' ? 1 : defs.length - 1)) % defs.length];
-          switchSubTab(next[0]);
-          subTabEls.__buttons.find((b) => b.dataset.sub === next[0])?.focus();
+          go(defs[(idx + (e.key === 'ArrowRight' ? 1 : defs.length - 1)) % defs.length][0]);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          go(defs[0][0]);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          go(defs[defs.length - 1][0]);
         }
       },
     }, label);
@@ -1661,9 +1672,21 @@ function init(panel) {
   }
   panel.append(tabBar);
 
-  const converterPane = h('div', { class: 'mr-util-pane', role: 'tabpanel' });
-  const ollamaPane = h('div', { class: 'mr-util-pane', role: 'tabpanel', hidden: true });
-  const guidePane = h('div', { class: 'mr-util-pane', role: 'tabpanel', hidden: true });
+  const converterPane = h('div', {
+    class: 'mr-util-pane', role: 'tabpanel',
+    id: 'mr-utility-panel-converter', 'aria-labelledby': 'mr-utility-tab-converter',
+    tabindex: '0',
+  });
+  const ollamaPane = h('div', {
+    class: 'mr-util-pane', role: 'tabpanel',
+    id: 'mr-utility-panel-ollama', 'aria-labelledby': 'mr-utility-tab-ollama',
+    tabindex: '0', hidden: true,
+  });
+  const guidePane = h('div', {
+    class: 'mr-util-pane', role: 'tabpanel',
+    id: 'mr-utility-panel-guide', 'aria-labelledby': 'mr-utility-tab-guide',
+    tabindex: '0', hidden: true,
+  });
   // The queue card lives in its own holder so the flow re-render never wipes it.
   const queueHolder = h('div', {});
   const flowHolder = h('div', {});
