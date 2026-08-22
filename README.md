@@ -161,8 +161,24 @@ those whose introducing commit carries the `Co-Authored-By: Claude Fable 5`
 trailer or whose author is the automation identity:
 
 <!-- COUNTS:START -->
-<!-- refreshed by CI on each release; table below captured at lane tip -->
-<!-- TIME-ESTIMATE: see the estimate method beside the table in the release notes -->
+<!-- refreshed by CI on each release; table below captured at this lane's tip -->
+
+| Bucket | Files | Lines | Non-blank | Agent | Human | Uncommitted |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| tests | 0 | 0 | 0 | 0 | 0 | 0 |
+| workflows | 1 | 368 | 332 | 368 | 0 | 0 |
+| styles | 10 | 925 | 856 | 925 | 0 | 0 |
+| docs | 25 | 1,764 | 1,345 | 1,764 | 0 | 0 |
+| site | 0 | 0 | 0 | 0 | 0 | 0 |
+| app-source | 45 | 8,527 | 7,692 | 8,527 | 0 | 0 |
+| scripts | 8 | 710 | 644 | 710 | 0 | 0 |
+| (unmatched) | 0 | 0 | 0 | 0 | 0 | 0 |
+| **TOTAL** | 89 | 12,294 | 10,869 | 12,294 | 0 | 0 |
+
+Generated lines within counted files: 0. Excluded entirely: node_modules, dist and build output, binary icon assets, package-lock.json (lockfile), docs/articles/index.json (generated docs index), .vscode/.idea scratch.
+
+**Hand-build time estimate (not a measurement):** roughly **75–110 hours** of focused solo work — about two to three calendar weeks. Method: 10,869 non-blank counted lines at an assumed 100–150 effective lines/hour for hand-written Electron/JS/CSS/Markdown, no difficulty multiplier applied. Disagree with the rate and the estimate moves with it.
+
 <!-- COUNTS:END -->
 
 ## 📚 Documentation
