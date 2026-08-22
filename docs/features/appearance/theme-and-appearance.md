@@ -61,3 +61,40 @@ restart.
 **Partially shipped.** The M3 token set and light/dark/system themes are in the
 foundation build. Per-element appearance editors, extended typography and color
 controls, and presets are **in progress for the Appearance lane**; see `ROADMAP.md`.
+
+## Shipped by the Appearance lane
+
+The planned items above are now implemented on top of the token set
+(tokens.css is never edited; the lane writes one runtime override style
+element):
+
+- **Extended controls.** Density (comfortable/compact), accent seed colour with
+  a derived M3-style role set for both themes, interface font picker over
+  installed + curated-safe families, text size scale 85-125%, and body-text
+  weight.
+- **Per-element appearance editing.** Anchored, non-modal editors open beside
+  the triggering tab or any marked target (`data-mr-appearance-target`) from
+  the context menu or the ContextMenu / Shift+F10 keys, with per-property and
+  reset-all resets, an explicit-inheritance toggle, and unsupported options
+  visible-but-disabled stating why.
+- **Infinite colour picker** with continuous SV field, HEX/RGB/HSL/alpha
+  entry, contrast readout vs surface, recent colours, honest eyedropper
+  availability, and the animated-rainbow sentinel mode (one global duration,
+  reduced motion settles one hue).
+- **Named presets:** five built-in M3-faithful schemes plus save-current,
+  schema-checked JSON export/import, bulk delete behind destructive
+  confirmation, and global reset.
+- **Narrator settings section:** enable (off by default), narrated language,
+  per-language voice pickers over live platform voices, rate/pitch, honest
+  status lines.
+- **Scheduled appearance rules:** local timezone evaluation, inclusive dates,
+  midnight-crossing time windows, weekday sets, later-enabled-rule-wins
+  precedence; external HTTPS/API sources deferred this release.
+
+Every setting row carries progressive-disclosure explanation plus a truthful
+default-provenance line; every persisted write goes through atomic settings
+storage and records a local-history entry; searchable pickers in this surface
+all embed the shared anchored regex-capable builder.
+
+See `docs/articles/appearance.md` for behaviour, failure modes and
+verification detail.
