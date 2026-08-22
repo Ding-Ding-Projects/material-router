@@ -63,6 +63,10 @@ async function bootstrap() {
   attachIpc();
   registerBuiltinHandlers({ settingsStore, vault, providersStore, routerServer });
 
+  // Feature-lane bridges self-register from app/main/bridges/*.js (see index.js).
+  const { loadLaneBridges } = await import('./bridges/index.js');
+  await loadLaneBridges({ settingsStore, vault, providersStore, routerServer, broadcast });
+
   createWindow();
 
   // Start the loopback router only when the setting allows it.
