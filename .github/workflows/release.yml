@@ -143,15 +143,15 @@ jobs:
           npx electron-builder --win squirrel --publish never
           if ($LASTEXITCODE -ne 0) { throw "electron-builder failed with exit code $LASTEXITCODE" }
           # The builder CLI can return before its asynchronous NuGet-pack phase
-          # has written RELEASES and the .full.nupkg. Poll for a bounded window
+          # has written RELEASES and the <name>-<version>-full.nupkg (hyphen, not dot). Poll
           # so those files exist (or fail loudly listing what did land).
           $dir = 'dist/squirrel-windows'
           $deadline = [DateTime]::UtcNow.AddSeconds(180)
-          while (-not (Get-ChildItem -LiteralPath $dir -Filter '*.full.nupkg' -ErrorAction SilentlyContinue)) {
+          while (-not (Get-ChildItem -LiteralPath $dir -Filter '*-full.nupkg' -ErrorAction SilentlyContinue)) {
             if ([DateTime]::UtcNow -gt $deadline) {
               Write-Host "contents of $dir after 180s:"
               Get-ChildItem -LiteralPath $dir | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
-              throw 'no *.full.nupkg appeared within 180s of the build finishing'
+              throw 'no *-full.nupkg appeared within 180s of the build finishing'
             }
             Write-Host "waiting for squirrel nupkg packaging to settle..."
             Start-Sleep -Seconds 5
@@ -187,10 +187,10 @@ jobs:
           }
 
           $setup = Get-ChildItem -LiteralPath $src -Filter '*-Setup.exe' | Select-Object -First 1
-          $full  = Get-ChildItem -LiteralPath $src -Filter '*.full.nupkg' | Select-Object -First 1
-          $delta = Get-ChildItem -LiteralPath $src -Filter '*.delta.nupkg' | Select-Object -First 1
+          $full  = Get-ChildItem -LiteralPath $src -Filter '*-full.nupkg' | Select-Object -First 1
+          $delta = Get-ChildItem -LiteralPath $src -Filter '*-delta.nupkg' | Select-Object -First 1
           if (-not $setup) { throw "no *-Setup.exe under dist/squirrel-windows" }
-          if (-not $full)  { throw "no *.full.nupkg under dist/squirrel-windows" }
+          if (-not $full)  { throw "no *-full.nupkg under dist/squirrel-windows" }
 
           Copy-Item -LiteralPath $setup.FullName -Destination 'release-assets/'
           Copy-Item -LiteralPath (Join-Path $src 'RELEASES') -Destination 'release-assets/'
