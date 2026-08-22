@@ -4,12 +4,24 @@
 // Owned by Foundation Core lane.
 
 import { h, svgIcon, ICONS, writeClipboard, saveText, fmtTimestamp } from './util.js';
-import { copy } from './i18n.js';
+import { copy, emojiToggleOn } from './i18n.js';
 import { createSearchBar, matchesQuery } from './searchbar.js';
 import { destructiveConfirm } from './dialogs.js';
 
 const MAX_VISIBLE = 4;
 const HISTORY_MAX = 200;
+
+// Decorative emoji for toast titles, only while the persisted
+// "Show emojis in dialogs and messages" toggle is on. Never applied to
+// buttons or field labels (Delight lane contract).
+const TOAST_EMOJI = { info: 'ℹ️', success: '✅', error: '⚠️' };
+
+function titleEl(text, kind) {
+  if (!emojiToggleOn()) return h('div', {}, text);
+  return h('div', {},
+    h('span', { 'aria-hidden': 'true', style: 'margin-right:6px' }, TOAST_EMOJI[kind] ?? '💬'),
+    text);
+}
 
 const state = {
   host: null,
@@ -73,7 +85,7 @@ function buildToastEl(entry, actions, onDismiss) {
     role: entry.kind === 'error' ? 'alert' : 'status',
   },
     h('div', {},
-      h('div', {}, entry.title),
+      titleEl(entry.title, entry.kind),
       entry.body ? h('div', { class: 'mr-notif-item__body' }, entry.body) : null,
     ),
     h('div', { class: 'm3-snackbar__actions' },

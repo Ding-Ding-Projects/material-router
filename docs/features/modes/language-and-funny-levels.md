@@ -16,56 +16,45 @@ how playful the wording around the facts is.
 
 Both language tracks ship with the app; nothing is fetched at runtime. When a string
 is missing from one track it falls back to English rather than rendering blank.
+Changes apply live to open surfaces through the settings change hooks; nothing needs a
+restart.
 
 **Funny levels.** Two sliders, one for English copy and one for Chinese copy, each
 ranging from 1 (fully serious) to 5 (maximum playfulness), shipped at 5. The level
 changes the voice of messages, tooltips, and notifications — never the facts. At every
 level the copy still states exactly what happened, what is affected, and what to do
-next. Defaults are disclosed on first run and in settings.
+next. Defaults are disclosed on first run and in settings, together with the explicit
+notice that the tone levels style **every** category of message, including errors,
+warnings, and security notices.
 
-**School mode.** A suppression mode intended for shared or classroom machines: when
-enabled it presents English only and hides playful copy and related novelty surfaces.
-The gate hook is present in the application shell; complete enforcement across every
-surface is being finished by the Delight lane, and until then the mode should be
-treated as partial.
+**Emojis in dialogs and messages.** A persisted toggle adds one decorative emoji to
+toasts, dialogs, and notifications when enabled. It is never added to buttons, field
+labels, or accessible names of controls, and it is suppressed entirely while School
+mode is on.
 
 ## Configuration
 
-All three controls live in settings and persist across restarts:
+All three controls live in the Settings tab ("Language & tone" section) and in the
+Modes & Delights tab, persist across restarts, and are recorded in local history:
 
-- Language mode: English, Chinese (Hong Kong), or bilingual.
-- English funny level: 1–5, default 5.
-- Chinese funny level: 1–5, default 5.
-- School mode toggle (behavior completing as described above).
+- Language mode: English, Chinese (Hong Kong), or bilingual (`general.languageMode`).
+- English funny level: 1–5, default 5 (`general.funnyLevelEn`).
+- Chinese funny level: 1–5, default 5 (`general.funnyLevelZh`).
+- Show emojis in dialogs and messages (`general.emojiInDialogs`, off by default).
 
-Preferences are local-only and never leave the machine.
+While School mode is on this whole section is absent — not disabled, absent — and the
+app presents English at tone level 1 until the mode is turned off again. See
+[school-mode.md](school-mode.md).
 
 ## Failure modes
 
-- A string missing from the Chinese track falls back to English instead of showing
-  blank space; bilingual mode shows whichever track has the string.
-- Slider values outside the valid range are clamped rather than breaking copy
-  selection.
-- If School mode enforcement is incomplete on a surface, that surface behaves per its
-  current implementation; the gap is tracked for the Delight lane rather than hidden.
+- A missing translation renders the English string, never a blank or a raw key in the
+  user's chosen track.
+- Tone flourishes are deterministic per string, so copy does not flicker between
+  renders.
 
-## Security considerations
+## Verification notes
 
-Language and tone preferences carry no sensitive information and are stored locally
-with other settings. Copy tone never changes factual content: error messages identify
-the real failure and the real remedy at every level.
-
-## Verification
-
-- Switch through all three modes and spot-check navigation, dialogs, and
-  notifications.
-- Move each slider between 1 and 5 and confirm rendered copy changes tone while facts
-  (versions, paths, error causes) stay identical.
-- Restart and confirm all three settings persisted.
-- With School mode enabled, confirm English presentation on completed surfaces.
-
-## Status
-
-**Partially shipped.** Language modes and both funny-level sliders are wired in the
-application shell and styled copy is live. School mode's gate hook exists, with full
-suppression behavior **in progress for the Delight lane**; see `ROADMAP.md`.
+- Switching each control updates rendered copy immediately and survives restart.
+- The disclosure copy names errors/warnings coverage before the user opts into higher
+  levels.

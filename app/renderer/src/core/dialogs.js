@@ -6,9 +6,17 @@
 // Owned by Foundation Core lane.
 
 import { h } from './util.js';
-import { copy, t } from './i18n.js';
+import { copy, t, emojiToggleOn } from './i18n.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Decorative emoji beside dialog titles, only when the toggle is on. */
+function titleContent(title) {
+  if (!emojiToggleOn() || !title) return title ?? '';
+  return h('span', {},
+    h('span', { 'aria-hidden': 'true', style: 'margin-right:8px' }, '💬'),
+    title);
+}
 
 /**
  * Open a modal. Returns {close, el}. Focus is trapped; Escape closes;
@@ -39,7 +47,7 @@ export function openModal({ title, body, actions = [], onClose = null, labelId }
     'aria-modal': 'true',
     'aria-labelledby': headingId,
   },
-    h('h2', { class: 'm3-dialog__title', id: headingId }, title ?? ''),
+    h('h2', { class: 'm3-dialog__title', id: headingId }, titleContent(title)),
     bodyEl,
     actionsEl,
   );

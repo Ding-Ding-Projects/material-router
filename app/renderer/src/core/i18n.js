@@ -16,10 +16,14 @@ export function addBundle(ns, bundle) {
 }
 
 export function languageMode() {
+  // School mode forces English presentation on every surface (Delight lane).
+  if (schoolModeActive()) return 'en';
   return settings.get('general.languageMode', 'en');
 }
 
 export function funnyLevel(lang) {
+  // School mode suppresses playful copy entirely: level 1, fully serious.
+  if (schoolModeActive()) return 1;
   return lang === 'zh'
     ? clampLevel(settings.get('general.funnyLevelZh', 5))
     : clampLevel(settings.get('general.funnyLevelEn', 5));
@@ -31,18 +35,18 @@ function clampLevel(v) {
   return Math.min(5, Math.max(1, Math.round(n)));
 }
 
-/** Emoji-in-dialogs toggle. Gated false in foundation; Delight lane completes it. */
+/** Emoji-in-dialogs toggle; suppressed entirely while School mode is on. */
 export function emojiToggleOn() {
-  return Boolean(settings.get('general.emojiInDialogs', false));
+  return !schoolModeActive() && Boolean(settings.get('general.emojiInDialogs', false));
 }
 
 /**
- * School mode gate hook. Foundation always reports inactive; the Delight lane
- * replaces this with the real shared-record read. Every surface must call
- * this rather than hardcoding behavior.
+ * School mode gate hook, now backed by the real shared record the Delight
+ * lane's bridge mirrors into settings (school.active). Every surface must
+ * call this rather than hardcoding behavior.
  */
 export function schoolModeActive() {
-  return false;
+  return Boolean(settings.get('school.active', false));
 }
 
 function resolve(nsKey) {
