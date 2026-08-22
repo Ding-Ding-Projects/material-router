@@ -7,12 +7,35 @@ import * as settings from './settings.js';
 
 const bundles = new Map(); // ns -> {en:{},zh:{}}
 let currentNsCache = new Map();
+// Whole-key index across every registered table. Lane bundles follow two
+// key conventions: some store unprefixed strings under their namespace
+// ("form.name" in ns "providers", addressed as t("providers.form.name")),
+// others store fully prefixed keys verbatim ("server.sectionStatus",
+// "dl.modes.title", and every core shell string). The namespaced lookup
+// serves the first convention; this index serves the second.
+let wholeKeyIndex = null;
 
 export const LANGUAGES = ['en', 'zh', 'bilingual'];
 
 export function addBundle(ns, bundle) {
   bundles.set(ns, bundle);
-  currentNsCache.delete(ns);
+  currentNsCache.clear();
+  if (!wholeKeyIndex) wholeKeyIndex = new Map();
+  for (const lang of ['en', 'zh']) {
+    const table = bundle?.[lang];
+    if (!table || typeof table !== 'object') continue;
+    for (const [key, value] of Object.entries(table)) {
+      if (value == null) continue;
+      let entry = wholeKeyIndex.get(key);
+      if (!entry) {
+        entry = { en: null, zh: null };
+        wholeKeyIndex.set(key, entry);
+      }
+      // First registration wins per slot so resolution stays deterministic
+      // regardless of lane import order.
+      if (entry[lang] == null) entry[lang] = value;
+    }
+  }
 }
 
 export function languageMode() {
@@ -57,10 +80,18 @@ function resolve(nsKey) {
   const bundle = bundles.get(ns);
   let result = null;
   if (bundle) {
+    // Convention 1: the table holds unprefixed strings for this namespace.
     const en = bundle.en?.[key];
     const zh = bundle.zh?.[key];
-    result = { en: en != null ? en : null, zh: zh != null ? zh : null };
+    if (en != null || zh != null) {
+      result = { en: en != null ? en : null, zh: zh != null ? zh : null };
+    }
   }
+  // Convention 2: the table holds fully prefixed keys, so match nsKey whole.
+  // Covers the core shell bundle (whose keys carry many prefixes under one
+  // namespace) and lanes whose prefix differs from their namespace name
+  // ("dl.*" registered as "delight").
+  if (!result) result = wholeKeyIndex?.get(nsKey) ?? null;
   currentNsCache.set(nsKey, result);
   return result;
 }

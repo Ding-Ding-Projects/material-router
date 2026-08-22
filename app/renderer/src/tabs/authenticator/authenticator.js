@@ -12,7 +12,7 @@
 // Owned by the Authenticator lane.
 
 import { h, writeClipboard, saveText, fmtDate } from '../../core/util.js';
-import { t, copy } from '../../core/i18n.js';
+import { t, copy, addBundle } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { invoke } from '../../core/bridge.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
@@ -23,6 +23,9 @@ import * as palette from '../../core/palette.js';
 import { qrSvgElement } from '../../core/qr.js';
 import { en } from './i18n.en.js';
 import { zh } from './i18n.zh.js';
+
+// Register this lane's strings (keys are stored fully prefixed, "auth.*").
+addBundle('auth', { en, zh });
 
 // ---------------------------------------------------------------------------
 // Local state
