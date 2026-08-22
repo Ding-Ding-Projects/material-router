@@ -1,2 +1,192 @@
-/* server tab styles.
-   Owned by its lane - extend freely; keep class names stable for tests. */
+/* Server & Logs tab styles. Tokens from core/tokens.css only; no raw colors.
+   Owned by Server lane - keep class names stable. */
+
+.mr-server {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-4);
+  max-width: 1020px;
+}
+
+/* ---- status card ---------------------------------------------------------- */
+
+.mr-srv__dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-outline);
+}
+.mr-srv__dot--on { background: var(--md-sys-color-success); }
+
+.mr-srv__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--mr-space-3);
+  margin-block: var(--mr-space-3);
+}
+.mr-srv__statlabel { color: var(--md-sys-color-on-surface-variant); }
+
+.mr-srv__banner {
+  display: flex;
+  align-items: center;
+  gap: var(--mr-space-3);
+  padding: var(--mr-space-2) var(--mr-space-3);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  margin-bottom: var(--mr-space-3);
+}
+.mr-srv__banner[hidden] { display: none; }
+
+.mr-srv__config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-2);
+  margin-top: var(--mr-space-3);
+  padding-top: var(--mr-space-3);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.mr-srv__portrow { align-items: stretch; }
+.mr-srv__portrow .m3-textfield { min-width: 140px; }
+
+.mr-srv__switchwrap { display: flex; flex-direction: column; gap: 2px; }
+.mr-srv__helper {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  max-width: 60ch;
+}
+.mr-srv__warn {
+  margin: 0;
+  color: var(--md-sys-color-error);
+  max-width: 60ch;
+}
+.mr-srv__warn[hidden] { display: none; }
+
+/* ---- token card ------------------------------------------------------------ */
+
+.mr-srv__tokenbox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-2);
+  margin-block: var(--mr-space-2);
+}
+.mr-srv__tokenbox[hidden] { display: none; }
+.mr-srv__tokenvalue {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px var(--mr-space-3);
+  border: 1px dashed var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-xs);
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: var(--md-sys-type-body-small-size);
+  word-break: break-all;
+}
+.mr-srv__wrap { flex-wrap: wrap; }
+
+/* ---- live log --------------------------------------------------------------- */
+
+.mr-srv__meta { margin-left: auto; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
+.mr-srv__meta--dropped { margin-left: 0; font-style: italic; }
+
+.mr-srv__logwrap {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-surface-container-lowest);
+  margin-top: var(--mr-space-2);
+}
+
+.mr-srv__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--md-sys-type-body-small-size);
+}
+.mr-srv__table[hidden] { display: none; }
+.mr-srv__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  white-space: nowrap;
+}
+.mr-srv__cell {
+  padding: 5px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 45%, transparent);
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mr-srv__cell--time { color: var(--md-sys-color-on-surface-variant); }
+.mr-srv__cell--num {
+  text-align: right;
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+.mr-srv__cell--bad { color: var(--md-sys-color-error); font-weight: 600; }
+
+.mr-srv__row { cursor: pointer; }
+.mr-srv__row:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent); }
+/* Error rows keep their data colors (functional encoding), everything else stays chrome. */
+.mr-srv__row--error { background: color-mix(in srgb, var(--md-sys-color-error) 8%, transparent); }
+
+/* ---- health / curl blocks ------------------------------------------------------ */
+
+.mr-srv__curlblock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-1);
+}
+.mr-srv__curllabel { color: var(--md-sys-color-on-surface-variant); }
+.mr-srv__curl {
+  margin: 0;
+  padding: var(--mr-space-3);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-surface-container-lowest);
+  overflow-x: auto;
+}
+.mr-srv__curl code {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: var(--md-sys-type-body-small-size);
+  line-height: 18px;
+  white-space: pre;
+  color: var(--md-sys-color-on-surface);
+}
+.mr-srv__curlactions { display: flex; justify-content: flex-end; }
+
+/* ---- request detail drawer ------------------------------------------------------- */
+
+.mr-srv__detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px var(--mr-space-4);
+}
+.mr-srv__detail-label { color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
+.mr-srv__detail-value {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: var(--md-sys-type-body-small-size);
+  word-break: break-all;
+}
+.mr-srv__detail-block { margin: var(--mr-space-3) 0 0; word-break: break-word; }
+.mr-srv__detail-error { color: var(--md-sys-color-error); }
+.mr-srv__redact-note {
+  margin-top: var(--mr-space-3);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- narrow layouts ----------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  .mr-srv__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mr-srv__meta { white-space: normal; }
+}
