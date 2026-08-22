@@ -56,8 +56,14 @@ Presentation languages and copy tone.
 Everyday utilities bundled beside the router.
 
 - [Notifications and history](toolbox/notifications-history.md) — Shipped in
-  foundation. File conversion is planned separately for the Utility lane and is not
-  covered by this article yet.
+  foundation.
+- [File converter](toolbox/file-converter.md) — Shipped in the Utility lane:
+  byte-signature detection, a declared adapter catalog with honest capability
+  gaps, sandboxed conversions and a persistent resumable batch queue.
+- [Ollama suite manager](toolbox/ollama-suite.md) — Shipped in the Utility
+  lane: service diagnosis, installed models, the official Model Store with
+  conservative hardware verdicts, batch pulls, local chat with sessions, and a
+  harness launcher with preflight review and snapshot rollback.
 
 ## Authenticator
 

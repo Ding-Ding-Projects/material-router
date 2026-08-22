@@ -12,7 +12,7 @@
 // which keeps parallel feature branches merge-conflict-free.
 
 import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const SELF = path.dirname(fileURLToPath(import.meta.url));
@@ -21,13 +21,15 @@ const SELF = path.dirname(fileURLToPath(import.meta.url));
  * Import every sibling module except this loader and call its register(ctx).
  * Modules are sorted so registration order is deterministic across machines.
  * A module that throws fails loudly at startup rather than half-registering.
+ * Dynamic imports need a real URL on every platform, so Windows drive paths
+ * go through pathToFileURL() before reaching the ESM loader.
  */
 export async function loadLaneBridges(ctx) {
   const files = readdirSync(SELF)
     .filter((f) => f.endsWith('.js') && f !== 'index.js')
     .sort();
   for (const file of files) {
-    const mod = await import(path.join(SELF, file));
+    const mod = await import(pathToFileURL(path.join(SELF, file)).href);
     if (typeof mod.register !== 'function') {
       throw new Error(`lane bridge ${file} must export register(ctx)`);
     }

@@ -4,7 +4,11 @@
 // Owned by Foundation Core lane.
 
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow } from 'electron';
+
+// ESM modules have no __dirname; derive the main directory once.
+const MAIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 import { JSONStore } from './store.js';
 import { Vault, defaultVaultPath } from './vault.js';
 import { ProvidersStore } from './providers-store.js';
@@ -101,7 +105,7 @@ function createWindow() {
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, '..', 'preload', 'preload.cjs'),
+      preload: path.join(MAIN_DIR, '..', 'preload', 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -110,7 +114,7 @@ function createWindow() {
   });
 
   win.once('ready-to-show', () => win.show());
-  win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  win.loadFile(path.join(MAIN_DIR, '..', 'renderer', 'index.html'));
   return win;
 }
 
