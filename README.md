@@ -39,18 +39,18 @@ service, no telemetry: your API keys never leave your machine.
 <details>
 <summary><strong>The rest of the app</strong></summary>
 
-- 🏗️ **Fully GUI-driven API builder** - compose, inspect and send requests without touching JSON *(Builder lane)*
-- 🔑 **Providers & keys** - OS-encrypted key storage via Electron safeStorage; per-provider base URLs and default models *(Providers lane)*
-- 🎨 **Material Design 3 expressive UI** - light/dark/system themes from one token sheet; per-element appearance editors *(Appearance lane)*
+- 🏗️ **Fully GUI-driven API builder** - compose, inspect and send requests without touching JSON
+- 🔑 **Providers & keys** - OS-encrypted key storage via Electron safeStorage; per-provider base URLs and default models
+- 🎨 **Material Design 3 expressive UI** - light/dark/system themes from one token sheet; per-element appearance editors
 - 🗂️ **Browser-style tabs** - dock left/right/top/bottom, pinning, named collapsible groups, drag reorder, rename, close guards
 - ⌨️ **Command palette** - `Ctrl+Shift+F`, fuzzy search, rich inline controls, teleport-to-element
 - 🔍 **Regex builder everywhere** - anchored to every search bar, step-budgeted matching, live capture groups
 - 🔔 **Notification center** - non-blocking toasts, searchable history, bulk actions, JSON/Markdown export
 - 🕘 **Local history journal** - filterable by date, action type, and text
 - 🌍 **Language modes** - English / Traditional Chinese (Hong Kong) / bilingual, plus per-language humor levels 1–5 that style voice without changing facts
-- 🔒 **Element locks & unlock ladder**, School mode, super confirmation *(Delight lane)*
-- 🔐 **Built-in authenticator** - TOTP entries with QR pairing *(Authenticator lane)*
-- 🧰 **Toolbox** - local file converter *(Utility lane)*
+- 🔒 **Element locks & unlock ladder**, School mode, super confirmation
+- 🔐 **Built-in authenticator** - TOTP entries with QR pairing
+- 🧰 **Toolbox** - local file converter
 - 📖 **Offline docs browser** - bundled articles, internal links, regex-capable search
 - 🔄 **Auto-updates** - background checks every six hours, staged installs behind a ready banner, unsigned feed disclosed everywhere
 
@@ -161,7 +161,7 @@ those whose introducing commit carries the `Co-Authored-By: Claude Fable 5`
 trailer or whose author is the automation identity:
 
 <!-- COUNTS:START -->
-<!-- refreshed by CI on each release; table below captured at this lane's tip -->
+<!-- refreshed by CI on each release; table below captured at this commit's tip -->
 
 | Bucket | Files | Lines | Non-blank | Agent | Human | Uncommitted |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |

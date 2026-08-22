@@ -7,12 +7,13 @@
 // enable) persist immediately.
 // Owned by Providers lane.
 
-import { h } from '../../core/util.js';
+import { h, uid } from '../../core/util.js';
 import { t, copy } from '../../core/i18n.js';
 import { invoke } from '../../core/bridge.js';
 import { destructiveConfirm } from '../../core/dialogs.js';
 import { toast } from '../../core/toasts.js';
 import { record as historyRecord } from '../../core/history.js';
+import { snapFor } from './restore.js';
 
 /** Model-prefix suggestions drawn from the families users actually route. */
 const PATTERN_CHIPS = ['gpt-4o', 'gpt-4*', 'o3*', 'claude-*', 'claude-sonnet-*', 'gemini-*'];
@@ -79,6 +80,9 @@ export function createRulesEditor({ getProviders, onChange }) {
 
   /** Rewrite priorities so display order == resolution order, persist diffs. */
   async function persistOrder(ordered) {
+    // Capture the current priority of every rule BEFORE any rewrite; the
+    // restore hook applies exactly this order back.
+    const beforeOrder = ordered.map((r) => ({ id: r.id, priority: r.priority }));
     const updates = [];
     ordered.forEach((r, i) => {
       const p = ordered.length - i;
@@ -86,7 +90,9 @@ export function createRulesEditor({ getProviders, onChange }) {
     });
     if (updates.length) {
       await Promise.all(updates);
-      historyRecord('rules.reorder', `${ordered.length} rules`, 'priorities rewritten to list order');
+      const rid = uid('rid');
+      snapFor(rid, { kind: 'rules-reorder', order: beforeOrder });
+      historyRecord('rules.reorder', `${ordered.length} rules`, 'priorities rewritten to list order', rid);
     }
     await onChange();
   }
@@ -205,8 +211,10 @@ export function createRulesEditor({ getProviders, onChange }) {
         const next = enableInput.checked;
         enableInput.disabled = true;
         try {
+          const rid = uid('rid');
+          snapFor(rid, { kind: 'rule-update', rule: { ...rule } });
           await invoke('providers:save-rule', { rule: { id: rule.id, enabled: next } });
-          historyRecord('rule.update', ruleSummary(draft.matchType, effectivePattern()), `enabled=${next}`);
+          historyRecord('rule.update', ruleSummary(draft.matchType, effectivePattern()), `enabled=${next}`, rid);
           await onChange();
         } catch (err) {
           enableInput.checked = !next;
@@ -252,8 +260,10 @@ export function createRulesEditor({ getProviders, onChange }) {
       });
       if (!ok) return;
       await guard(async () => {
+        const rid = uid('rid');
+        snapFor(rid, { kind: 'rule-delete', rule: { ...rule } });
         await invoke('providers:delete-rule', { id: rule.id });
-        historyRecord('rule.delete', ruleSummary(rule.matchType, rule.pattern), `was -> ${targetName}`);
+        historyRecord('rule.delete', ruleSummary(rule.matchType, rule.pattern), `was -> ${targetName}`, rid);
         await onChange();
       });
     });
@@ -319,19 +329,26 @@ export function createRulesEditor({ getProviders, onChange }) {
         pattern: effectivePattern(),
         providerId: draft.providerId,
       };
+      // Pre-edit snapshot for the update path; captured before any save so
+      // the restore hook can write these exact values back.
+      const beforeRule = isPending ? null : { ...rule };
       await guard(async () => {
         if (isPending) {
           const created = await invoke('providers:save-rule', { rule: payload });
           pending = null;
+          const rid = uid('rid');
+          snapFor(rid, { kind: 'rule-add', rule: { ...created } });
           historyRecord('rule.add', ruleSummary(created.matchType, created.pattern),
-            `-> ${providers.find((p) => p.id === created.providerId)?.name ?? '?'}`);
+            `-> ${providers.find((p) => p.id === created.providerId)?.name ?? '?'}`, rid);
           await persistOrder([...rules, created]);
         } else {
           const saved = await invoke('providers:save-rule', {
             rule: { ...payload, id: rule.id },
           });
+          const rid = uid('rid');
+          snapFor(rid, { kind: 'rule-update', rule: beforeRule });
           historyRecord('rule.update', ruleSummary(saved.matchType, saved.pattern),
-            `-> ${providers.find((p) => p.id === saved.providerId)?.name ?? '?'}`);
+            `-> ${providers.find((p) => p.id === saved.providerId)?.name ?? '?'}`, rid);
           await onChange();
         }
       });

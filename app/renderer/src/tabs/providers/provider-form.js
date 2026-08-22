@@ -11,6 +11,7 @@ import { openModal, destructiveConfirm } from '../../core/dialogs.js';
 import { invoke } from '../../core/bridge.js';
 import { toast } from '../../core/toasts.js';
 import { record as historyRecord } from '../../core/history.js';
+import { snapFor } from './restore.js';
 
 /** Canonical prefilled base URL per provider type ('' = user must supply). */
 export const TYPE_DEFAULT_BASE_URL = {
@@ -325,6 +326,13 @@ export function openProviderDialog({ provider = null, models = [], onSave = () =
     const baseUrl = urlInput.value.trim();
     const keyRefForProvider = state.keyRef || `mrkey_${state.id}`;
     const writingNewKey = Boolean(state.newKey);
+    // Restore support: stash the pre-edit record (update) or the created id
+    // (add) out of band, keyed to the journal entry via rid. Snapshots carry
+    // vault ids only - never key values.
+    const beforeEdit = isEdit && provider ? { ...provider } : null;
+    const editRid = isEdit ? uid('rid') : '';
+    const addRid = isEdit ? '' : uid('rid');
+    if (isEdit) snapFor(editRid, { kind: 'prov-update', provider: beforeEdit });
     try {
       if (writingNewKey) {
         // Replacing an existing key overwrites the same vault id BEFORE the
@@ -367,8 +375,14 @@ export function openProviderDialog({ provider = null, models = [], onSave = () =
         }
       }
 
-      historyRecord(isEdit ? 'providers.update' : 'providers.add', saved?.name ?? name,
-        `type=${state.type} baseUrl=${baseUrl}`);
+      if (isEdit) {
+        historyRecord('providers.update', saved?.name ?? name,
+          `type=${state.type} baseUrl=${baseUrl}`, editRid);
+      } else {
+        snapFor(addRid, { kind: 'prov-add', provider: { ...(saved ?? {}), id: state.id, name } });
+        historyRecord('providers.add', saved?.name ?? name,
+          `type=${state.type} baseUrl=${baseUrl}`, addRid);
+      }
       dlg.close();
       onSave(saved);
       return true;

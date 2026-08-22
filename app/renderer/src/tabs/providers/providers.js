@@ -24,8 +24,15 @@ import { en } from './providers.en.js';
 import { zh } from './providers.zh.js';
 import { openProviderDialog, TYPE_LABEL_KEYS } from './provider-form.js';
 import { createRulesEditor } from './rules-editor.js';
+import { snapFor, registerProvidersRestore, setRestoreRefresh } from './restore.js';
+import { uid } from '../../core/util.js';
 
 addBundle('providers', { en, zh });
+
+// Restore hooks must exist before the history panel is ever opened, so they
+// are registered at module load (app.js imports this module for its side
+// effects on startup), not on first tab visit.
+registerProvidersRestore();
 
 const TEST_DEADLINE_MS = 35_000; // bridge clamps its own fetch to <= 30s
 const STATUS_KEY = 'mr.providers.testStatus.v1';
@@ -110,6 +117,10 @@ function render(container) {
     getProviders: () => data.providers,
     onChange: reload,
   });
+
+  // Restore hooks refresh this surface after a compensating mutation; safe
+  // only now that listEl and rulesEditor exist.
+  setRestoreRefresh(reload);
 
   container.append(
     h('div', { class: 'mr-prov-toolbar' }, searchApi.el, h('span', { class: 'mr-grow' }), addBtn),
@@ -323,6 +334,11 @@ async function deleteProvider(p) {
     body: `${t('providers.deleteBody', { name: p.name })} ${keyRefWording} ${copy('providers.deleteBodyRules')}`,
   });
   if (!ok) return;
+  // Snapshot for the history panel's restore action BEFORE anything is
+  // removed; a failed delete leaves an orphan snapshot that journal pruning
+  // drops later.
+  const delRid = uid('rid');
+  snapFor(delRid, { kind: 'prov-delete', provider: { ...p } });
   try {
     await withDeadline(invoke('providers:delete', { id: p.id }), 10_000);
   } catch (err) {
@@ -338,7 +354,7 @@ async function deleteProvider(p) {
       toast(t('providers.warn.orphanKeyTitle'), t('providers.warn.orphanKeyBody', { id: p.keyRef, msg: err.message }), { kind: 'error' });
     }
   }
-  history.record('providers.delete', p.name, `keyRef=${p.keyRef || 'none'}`);
+  history.record('providers.delete', p.name, `keyRef=${p.keyRef || 'none'}`, delRid);
   modelOptions.delete(p.id);
   delete testStatus[p.id];
   persistTestStatus();

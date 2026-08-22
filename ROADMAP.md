@@ -42,7 +42,8 @@ Items are never silently deleted; dropped ideas move to "Deliberately not doing"
 ## Phase 2 - Hardening & platform
 
 - [x] Plumbing lane: unique monotonic release tags, line-count table in release notes, dim-sum release asset, workflow timing evidence (pipeline merged; first live run proves it at the next push to main)
-- [x] Local zero-dependency test suite (`npm test`, node:test only) covering translator round-trips + streaming both directions, store atomic writes + retry seam, providers route resolution, upstream deadline/SSE/error normalization via loopback fixture server, vault scrypt + obfuscation persistence — 88 tests green on Windows Node 24 (CI still runs no tests by policy); suite found and fixed two product bugs: vault obfuscation header mismatch made fallback secrets unreadable, JSONStore.delete reported success for absent keys
+- [x] Real-artifact smoke verification of the merged nine-lane app (2026-08-22): launch and drive the built renderer, not just the source tree
+- [ ] Captures embedded in README: real captures of every surface that has one, from the built artifact
 - [ ] Auto-updater: unsigned-feed check-on-start/background schedule, ready banner, restart-to-install protections
 - [ ] Dependency digest manifest for downloaded binaries (versions + SHA-256, verified by fetcher)
 - [ ] Accessibility audit pass across every registered surface
@@ -50,5 +51,5 @@ Items are never silently deleted; dropped ideas move to "Deliberately not doing"
 
 ## Deliberately not doing
 
-- Code signing, in any form, ever (project policy).
+- Signed builds - code signing, in any form, ever (project policy). Installers stay unsigned and say so.
 - Test or lint jobs inside GitHub Actions workflows (project policy); local checks remain the author's responsibility in the task that changes code.

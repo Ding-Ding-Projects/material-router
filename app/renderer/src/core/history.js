@@ -1,6 +1,8 @@
 // Purpose: the local append-only history journal (ring of 500) and its
 // filterable panel: date range, action-type chips derived from recorded
-// actions, text search, export. Restore hooks are stubs later lanes extend.
+// actions, text search, export. Lanes register restore implementations with
+// onRestore(action, fn); restores append compensating entries and never
+// rewrite this journal.
 // Owned by Foundation Core lane.
 
 import { h, saveText, fmtDate } from './util.js';
@@ -28,14 +30,23 @@ function persist() {
   } catch { /* storage full - journal is best-effort */ }
 }
 
-/** Record one append-only entry. Unchanged states should not be recorded. */
-export function record(action, targetLabel, detail = '') {
-  state.journal.push({
+/**
+ * Record one append-only entry. Unchanged states should not be recorded.
+ * `restoreId` is optional: lanes whose restore hooks need machine-readable
+ * context stash it out of band (see tabs/providers/restore.js) and pass the
+ * same id here, so the panel row can be linked to its snapshot without
+ * putting payloads into the visible text.
+ */
+export function record(action, targetLabel, detail = '', restoreId = '') {
+  const entry = {
     ts: new Date().toISOString(),
     action: String(action),
     target: String(targetLabel),
     detail: String(detail),
-  });
+  };
+  const rid = String(restoreId || '');
+  if (rid) entry.rid = rid;
+  state.journal.push(entry);
   if (state.journal.length > JOURNAL_MAX) state.journal.shift();
   persist();
 }
