@@ -24,6 +24,9 @@ import './tabs/appearance/appearance.js';
 import './tabs/delight/delight.js';
 import './tabs/utility/utility.js';
 import './tabs/authenticator/authenticator.js';
+// Auto-update ready banner (integration edit: plumbing lane owns the module,
+// this single import line is the one cross-lane wiring it could not make).
+import './core/updater-banner.js';
 
 void h;
 void svgIcon;

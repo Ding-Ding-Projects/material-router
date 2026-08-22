@@ -87,6 +87,7 @@ Documentation that ships with the application.
 
 Packaging, distribution, and updates.
 
-- [Packaging and updates](platform/packaging-updates.md) — Skeleton: Windows x64
+- [Packaging and updates](platform/packaging-updates.md) — Windows x64 Squirrel packaging, unsigned-artifact policy, release pipeline contract
+- [Auto-update](platform/auto-update.md) — unsigned-feed checks, staged download, ready banner with restart-to-install
   Squirrel.Windows targets are recorded and the CI release workflow is being finalized
   by the Plumbing lane.

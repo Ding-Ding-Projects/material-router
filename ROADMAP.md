@@ -30,18 +30,18 @@ Items are never silently deleted; dropped ideas move to "Deliberately not doing"
 
 ## Phase 1 - Feature lanes
 
-- [ ] Builder lane: visual API builder (compose, translate-preview, send through local router, save/load requests)
-- [ ] Providers lane: provider/key/routing-rule GUI on top of existing stores and vault IPC
-- [ ] Server lane: server controls surface, live log stream view, per-request detail
-- [ ] Appearance lane: per-element appearance editors, presets, export/import, tab appearance from context menu event
-- [ ] Delight lane: School mode implementation, element toy locks + unlock ladder, super-confirmation gate upgrade, narrator/TTS, dim-sum surprise, ADHD modes
-- [ ] Utility lane: local file converter suite, extended toolbox, docs browser extensions
+- [x] Builder lane: visual API builder (compose, translate-preview, send through local router, save/load requests)
+- [x] Providers lane: provider/key/routing-rule GUI on top of existing stores and vault IPC
+- [x] Server lane: server controls surface, live log stream view, per-request detail
+- [x] Appearance lane: per-element appearance editors, presets, export/import, tab appearance from context menu event
+- [x] Delight lane: School mode implementation, element toy locks + unlock ladder, super-confirmation gate upgrade, narrator/TTS, dim-sum surprise, ADHD modes
+- [x] Utility lane: local file converter suite, extended toolbox, docs browser extensions
 - [x] Authenticator lane: TOTP entries, QR pairing flow, RFC 6238 vectors (verified against RFC 4226 + RFC 6238 Appendix B; QR encoder proven by decode-back with independent GF(256) syndrome check)
-- [ ] Site lane: GitHub Pages landing/documentation site with full feature contract parity
+- [x] Site lane: GitHub Pages landing/documentation site with full feature contract parity
 
 ## Phase 2 - Hardening & platform
 
-- [ ] Plumbing lane: unique monotonic release tags, line-count table in release notes, dim-sum release asset, workflow timing evidence
+- [x] Plumbing lane: unique monotonic release tags, line-count table in release notes, dim-sum release asset, workflow timing evidence (pipeline merged; first live run proves it at the next push to main)
 - [ ] Auto-updater: unsigned-feed check-on-start/background schedule, ready banner, restart-to-install protections
 - [ ] Dependency digest manifest for downloaded binaries (versions + SHA-256, verified by fetcher)
 - [ ] Accessibility audit pass across every registered surface

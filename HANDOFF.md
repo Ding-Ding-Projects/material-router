@@ -1,6 +1,6 @@
 # Handoff - Foundation
 
-State: foundation skeleton complete on `feat/foundation`. Every architectural seam the
+State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (86 app modules clean). Integration edits made by the integrator: updater-banner import wired in app/renderer/src/app.js, docs manifest regenerated, ROADMAP Phase 1 ticks applied, platform index section corrected. The two foundation repairs from the utility lane (ESM loader pathToFileURL, MAIN_DIR for createWindow) are present.
 feature lanes depend on exists, runs, and is named. Lane surfaces are working placeholder
 cards except the docs browser, which is functional.
 
