@@ -372,7 +372,24 @@
 .mr-md h1 { font-size: 28px; } .mr-md h2 { font-size: 22px; } .mr-md h3 { font-size: 18px; } .mr-md h4 { font-size: 16px; }
 .mr-md p { margin: 8px 0; }
 .mr-md ul, .mr-md ol { padding-left: 24px; margin: 8px 0; }
-.mr-md code { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 0.9em; background: var(--md-sys-color-surface-container-highest); border-radius: 4px; padding: 1px 5px; }
+/* Inline code chips (PG-08): em-based padding scales with the chip font, the
+   chip's own line-height stops it inflating heading line boxes, and
+   box-decoration-break keeps a wrapped chip readable. Vertical padding on an
+   inline element paints outside layout, so chip-bearing blocks get explicit
+   extra leading below - that is what keeps the tinted pill off the previous
+   line's descenders at default zoom and beyond. */
+.mr-md code {
+  font-family: Consolas, 'Cascadia Mono', monospace;
+  font-size: 0.875em;
+  line-height: 1.4;
+  background: var(--md-sys-color-surface-container-highest);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.mr-md p:has(code), .mr-md li:has(code), .mr-md blockquote:has(code),
+.mr-md td:has(code), .mr-md th:has(code) { line-height: 1.9; }
 .mr-md pre { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-sys-shape-corner-sm); padding: var(--mr-space-3); overflow-x: auto; }
 .mr-md pre code { background: transparent; padding: 0; }
 .mr-md blockquote { margin: 8px 0; padding: 4px 16px; border-left: 4px solid var(--md-sys-color-primary-container); color: var(--md-sys-color-on-surface-variant); }

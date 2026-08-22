@@ -52,6 +52,8 @@ let liveRegion = null;
 let listEl = null;
 let countEl = null;
 let addBtnEl = null;
+/** @type {HTMLElement|null} header vault-state chip (module-level like its siblings) */
+let vaultChip = null;
 let timerStarted = false;
 let paletteReady = false;
 
@@ -65,8 +67,11 @@ function render(container) {
 
   liveRegion = h('div', { class: 'mr-visually-hidden', 'aria-live': 'polite', role: 'status' });
 
-  const subtitle = h('p', { class: 'mr-typography-body-medium mr-auth-subtitle' }, '');
-  const vaultChip = h('span', { class: 'm3-chip mr-auth-vault-chip', role: 'status' }, '');
+  const subtitle = h('p', { class: 'mr-typography-body-medium mr-auth-subtitle' }, copy('auth.subtitle'));
+  // Starts hidden: an empty chip used to render as a small unnamed circle
+  // under the heading (PG-09). It only appears once renderVaultChip() gives
+  // it real vault-state content and an accessible name from that content.
+  vaultChip = h('span', { class: 'm3-chip mr-auth-vault-chip', role: 'status', hidden: true }, '');
 
   countEl = h('span', { class: 'mr-typography-label-medium mr-auth-count' });
 
@@ -141,10 +146,20 @@ async function refresh() {
     state.entries = res.entries ?? [];
     state.vaultOk = Boolean(res.encryptionAvailable);
     state.obfuscationWarned = Boolean(res.obfuscationWarned);
+    // Only after a real answer: a failed load leaves the chip hidden rather
+    // than claiming a vault state nobody verified.
+    renderVaultChip();
   } finally {
     await refreshCodes();
     renderList();
   }
+}
+
+/** Fill the vault-state chip (PG-09): real content or nothing, never a blank pill. */
+function renderVaultChip() {
+  if (!vaultChip) return;
+  vaultChip.textContent = state.vaultOk ? copy('auth.vaultOk') : copy('auth.vaultFallback');
+  vaultChip.hidden = false;
 }
 
 async function refreshCodes(ids = null) {
@@ -574,6 +589,7 @@ async function reloadEntriesOnly() {
   const res = await invoke('vault:auth-list');
   state.entries = res.entries ?? [];
   state.vaultOk = Boolean(res.encryptionAvailable);
+  renderVaultChip();
   renderList();
 }
 
