@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"test/*.test.mjs\"",
     "dist": "electron-builder --win squirrel",
     "icons": "node scripts/generate-icons.mjs",
     "docs-index": "node scripts/build-docs-index.mjs",
