@@ -1,14 +1,9 @@
 name: Release
 
-# Policy: GitHub Actions runs no tests and no lint. A workflow builds,
-# packages and publishes a release — that is the whole job. Nothing here may
-# gate the release on a code-quality verdict.
-#
-# TODO(plumbing-lane):
-#  - enforce unique monotonic release tags (never recycle a prior tag)
-#  - append the committed line-count table (npm run count) to the release notes
-#  - attach the required dim-sum photo asset from the public catalog release
-#  - record end-to-end workflow timing (startedAt -> publication) in the notes
+# Policy: GitHub Actions runs NO tests and NO lint, ever. A workflow builds,
+# packages and publishes a release - that is the whole job. Nothing anywhere in
+# this file may gate publication on a code-quality verdict, and nothing may be
+# added later that does: local checks belong to the task that changes the code.
 
 on:
   push:
@@ -18,7 +13,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
-# Release publishing is not idempotent: never cancel an in-flight run.
+# Release publishing is not idempotent: never cancel an in-flight run. The
+# group is scoped per ref so simultaneous releases on different refs cannot
+# interleave.
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -26,33 +23,339 @@ concurrency:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
     steps:
-      - name: Checkout
+      - name: Checkout full history
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Node
+      - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          npm ci --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE" }
 
-      # Idempotent: regenerates deterministic brand assets if missing/stale.
-      - name: Generate icons
-        run: node scripts/generate-icons.mjs
+      # Idempotent: regenerates deterministic brand assets.
+      - name: Regenerate brand assets
+        run: |
+          npm run icons
+          if ($LASTEXITCODE -ne 0) { throw "icon generation failed with exit code $LASTEXITCODE" }
 
-      - name: Build and publish Squirrel installer
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win squirrel --publish always
+      - name: Record workflow start
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $startedAt = (Get-Date).ToUniversalTime().ToString('o')
+          try {
+            $job = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/jobs" --jq '.jobs[0].started_at'
+            if ($LASTEXITCODE -eq 0 -and $job) {
+              $startedAt = ([datetime]::Parse(($job | Select-Object -First 1))).ToUniversalTime().ToString('o')
+            }
+          } catch {
+            Write-Host "could not read the runner-reported job start; using first-step time instead"
+          }
+          "WORKFLOW_STARTED_AT=$startedAt" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "workflow started: $startedAt"
 
-      # Safety net: collect build output even when a previous step fails so
-      # failed installers keep their evidence. Artifact upload never gates
-      # anything and never masks the original failure.
+      # Unique monotonic tags, never recycled: highest existing vX.Y.Z across
+      # tags AND release names, bumped at the minor level with patch reset.
+      # A candidate that collides fails the job loudly instead of overwriting.
+      # With no prior version at all, the app's own package.json version is
+      # used so the very first release matches the artifact it ships.
+      - name: Compute unique monotonic release tag
+        id: tag
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $repo = $env:GITHUB_REPOSITORY
+          $names = New-Object System.Collections.Generic.List[string]
+          foreach ($page in @(gh api "repos/$repo/tags" --paginate --jq '.[].name')) { $names.Add([string]$page) }
+          foreach ($page in @(gh api "repos/$repo/releases" --paginate --jq '.[].tag_name')) { $names.Add([string]$page) }
+
+          $semver = [regex]'^v(\d+)\.(\d+)\.(\d+)$'
+          $highest = $null
+          foreach ($n in $names) {
+            $m = $semver.Match($n)
+            if (-not $m.Success) { continue }
+            $tuple = [pscustomobject]@{
+              Tag   = $n
+              Major = [int]$m.Groups[1].Value
+              Minor = [int]$m.Groups[2].Value
+              Patch = [int]$m.Groups[3].Value
+            }
+            if ($null -eq $highest) { $highest = $tuple; continue }
+            if (($tuple.Major -gt $highest.Major) -or
+                ($tuple.Major -eq $highest.Major -and $tuple.Minor -gt $highest.Minor) -or
+                ($tuple.Major -eq $highest.Major -and $tuple.Minor -eq $highest.Minor -and $tuple.Patch -gt $highest.Patch)) {
+              $highest = $tuple
+            }
+          }
+
+          if ($null -eq $highest) {
+            $pkg = Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json
+            $previous = ''
+            $candidate = "v$($pkg.version)"
+          } else {
+            $previous = $highest.Tag
+            $candidate = "v$($highest.Major).$($highest.Minor + 1).0"
+          }
+
+          if ($names -contains $candidate) {
+            throw "release tag collision: $candidate already exists as a tag or release - refusing to recycle a version"
+          }
+          # Ask the git server directly rather than the API layer: one source
+          # of truth for whether the ref really exists.
+          $existingRef = git ls-remote --tags origin "refs/tags/$candidate"
+          if ($LASTEXITCODE -ne 0) { throw "could not query remote tags for $candidate" }
+          if ($existingRef) {
+            throw "release tag collision: refs/tags/$candidate already exists on the remote"
+          }
+
+          "RELEASE_TAG=$candidate" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "PREVIOUS_TAG=$previous" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "previous tag: $(if ($previous) { $previous } else { '(none)' }); releasing: $candidate"
+
+      # The artifact version must advance with the tag or the auto-updater's
+      # semver comparison could never see a new release. This rewrites the
+      # build-time copy only; nothing is committed back to the repository.
+      - name: Sync package version to the release tag
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:RELEASE_TAG.TrimStart('v')
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('package.json','utf8'));j.version='$version';fs.writeFileSync('package.json',JSON.stringify(j,null,2)+'\n');"
+          if ($LASTEXITCODE -ne 0) { throw "version sync failed" }
+          Write-Host "building version $version"
+
+      - name: Build Squirrel installer (unsigned, never published by the builder)
+        run: |
+          npx electron-builder --win squirrel --publish never
+          if ($LASTEXITCODE -ne 0) { throw "electron-builder failed with exit code $LASTEXITCODE" }
+
+      # Every staged artifact must exist, be non-empty, and report NotSigned.
+      # Signing is permanently out of scope, so a signed output means something
+      # went badly wrong and fails the job rather than shipping.
+      - name: Stage and verify installer artifacts
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = Join-Path (Get-Location) 'dist/squirrel-windows'
+          if (-not (Test-Path $src)) { throw "dist/squirrel-windows was not produced by the build" }
+          New-Item -ItemType Directory -Force -Path 'release-assets' | Out-Null
+
+          function Assert-Staged([string]$path, [switch]$Optional) {
+            if (-not (Test-Path -LiteralPath $path)) {
+              if ($Optional) { Write-Host "optional artifact absent: $path"; return }
+              throw "required artifact missing: $path"
+            }
+            $len = (Get-Item -LiteralPath $path).Length
+            if ($len -le 0) { throw "artifact exists but is zero bytes: $path" }
+            if ($path -like '*.exe') {
+              $status = (Get-AuthenticodeSignature -LiteralPath $path).Status
+              if ($status -ne 'NotSigned') {
+                throw "unexpected Authenticode status '$status' on $path - signing is permanently out of scope"
+              }
+              Write-Host "verified NotSigned: $(Split-Path $path -Leaf) ($len bytes)"
+            } else {
+              Write-Host "staged: $(Split-Path $path -Leaf) ($len bytes)"
+            }
+          }
+
+          $setup = Get-ChildItem -LiteralPath $src -Filter '*-Setup.exe' | Select-Object -First 1
+          $full  = Get-ChildItem -LiteralPath $src -Filter '*.full.nupkg' | Select-Object -First 1
+          $delta = Get-ChildItem -LiteralPath $src -Filter '*.delta.nupkg' | Select-Object -First 1
+          if (-not $setup) { throw "no *-Setup.exe under dist/squirrel-windows" }
+          if (-not $full)  { throw "no *.full.nupkg under dist/squirrel-windows" }
+
+          Copy-Item -LiteralPath $setup.FullName -Destination 'release-assets/'
+          Copy-Item -LiteralPath (Join-Path $src 'RELEASES') -Destination 'release-assets/'
+          Copy-Item -LiteralPath $full.FullName -Destination 'release-assets/'
+          Assert-Staged (Join-Path 'release-assets' $setup.Name)
+          Assert-Staged (Join-Path 'release-assets' 'RELEASES')
+          Assert-Staged (Join-Path 'release-assets' $full.Name)
+          if ($delta) {
+            Copy-Item -LiteralPath $delta.FullName -Destination 'release-assets/'
+            Assert-Staged (Join-Path 'release-assets' $delta.Name)
+          }
+
+          # Digests for independent download verification: installers are
+          # unsigned, so this digest list is the user's practical integrity
+          # check and the release notes point straight at it.
+          $hashLines = foreach ($f in (Get-ChildItem -LiteralPath 'release-assets')) {
+            "{0}  {1}" -f ((Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLower()), $f.Name
+          }
+          $hashLines | Set-Content -LiteralPath 'release-assets/SHA256SUMS.txt' -Encoding Ascii
+          Write-Host 'staged: SHA256SUMS.txt'
+          Get-Content -LiteralPath 'release-assets/SHA256SUMS.txt'
+
+      # Code name resolved from the public dim-sum catalog: the first dish
+      # whose bilingual names were never used by this repository AND whose
+      # photograph is actually published under a catalog-v1* release asset,
+      # confirmed with a HEAD request before selection. The catalog is never
+      # vendored and no substitute photo is generated or downloaded from any
+      # other source. If nothing qualifies, the release ships with its version
+      # alone and says so - the code name decorates, it never blocks.
+      - name: Resolve dim-sum code name and photo
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $catalogUrl = 'https://raw.githubusercontent.com/Ding-Ding-Projects/dim-sum-photos/main/catalog/index.json'
+          $catalog = Invoke-RestMethod -Uri $catalogUrl -Method Get
+          if (-not $catalog.dishes) { throw "public catalog at $catalogUrl returned no dishes" }
+
+          $assetMap = @{}
+          foreach ($row in @(gh api 'repos/Ding-Ding-Projects/dim-sum-photos/releases?per_page=100' --paginate --jq '.[] | select(.tag_name | startswith("catalog-v1")) | .assets[] | .browser_download_url')) {
+            $u = [string]$row
+            if ($u) { $assetMap[[System.IO.Path]::GetFileName($u)] = $u }
+          }
+          Write-Host "published catalog-v1* photo assets indexed: $($assetMap.Count)"
+
+          # Track reuse per dish: the slug, the bilingual names, and the whole
+          # recorded marker. Never match on bare shared words such as "roll",
+          # or two different dishes would collide.
+          $used = New-Object System.Collections.Generic.HashSet[string]
+          foreach ($body in @(gh api "repos/$env:GITHUB_REPOSITORY/releases?per_page=100" --paginate --jq '.[].body')) {
+            if (-not $body) { continue }
+            foreach ($line in ($body -split "`n")) {
+              if ($line -match '^Code name:\s*(.+)$') {
+                [void]$used.Add($Matches[1].Trim().ToLowerInvariant())
+                foreach ($seg in ($Matches[1] -split '[·|]')) {
+                  $s = $seg.Trim()
+                  if ($s) { [void]$used.Add($s.ToLowerInvariant()) }
+                }
+              }
+            }
+          }
+          Write-Host "code-name identities already used: $($used.Count)"
+
+          $picked = $null
+          foreach ($dish in $catalog.dishes) {
+            $slug = [string]$dish.slug
+            $en   = [string]$dish.name.en
+            $zh   = [string]$dish.name.zhHant
+            if (-not $slug -or -not $en -or -not $zh) { continue }
+            if ($used.Contains($slug.ToLowerInvariant())) { continue }
+            if ($used.Contains($en.ToLowerInvariant())) { continue }
+            if ($used.Contains($zh.ToLowerInvariant())) { continue }
+            $imageLeaf = [System.IO.Path]::GetFileName([string]$dish.image.path)
+            if (-not $imageLeaf -or -not $assetMap.ContainsKey($imageLeaf)) { continue }
+            $url = $assetMap[$imageLeaf]
+            try {
+              $head = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -TimeoutSec 30
+              if ($head.StatusCode -ne 200) { continue }
+            } catch { continue }
+            Invoke-WebRequest -Uri $url -OutFile "release-assets/$imageLeaf" -UseBasicParsing -TimeoutSec 120
+            $picked = [pscustomobject]@{ En = $en; Zh = $zh; Image = $imageLeaf }
+            break
+          }
+
+          if ($picked) {
+            "DIMSUM_MARKER=Code name: $($picked.En) · $($picked.Zh)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            "DIMSUM_IMAGE=$($picked.Image)"                          | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            Write-Host "picked: $($picked.En) / $($picked.Zh) -> $($picked.Image)"
+          } else {
+            "DIMSUM_MARKER=" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            "DIMSUM_IMAGE="  | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            Write-Host "::warning::no unused dim-sum dish with a published catalog-v1* photo was resolvable; shipping without a code name"
+          }
+
+      - name: Capture line-count table
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm run count -- --markdown > release-counts.md
+          if ($LASTEXITCODE -ne 0) { throw "npm run count failed with exit code $LASTEXITCODE" }
+          Get-Content -LiteralPath 'release-counts.md'
+
+      - name: Generate release notes
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = $env:RELEASE_TAG
+          $version = $tag.TrimStart('v')
+
+          if ($env:PREVIOUS_TAG) {
+            $log = git log "$($env:PREVIOUS_TAG)..$env:GITHUB_SHA" --oneline --no-decorate
+            if ($LASTEXITCODE -ne 0) { throw "git log failed for $($env:PREVIOUS_TAG)..$env:GITHUB_SHA" }
+            $log = @($log) | Select-Object -First 300
+          } else {
+            $log = @(git log --oneline --no-decorate) | Select-Object -First 300
+          }
+          if (-not $log) { $log = @('(first release - no prior commits to list)') }
+
+          $markerLine = if ($env:DIMSUM_MARKER) { $env:DIMSUM_MARKER } else { 'Code name: none resolved this run (see the warning in the workflow log)' }
+
+          $parts = [System.Collections.Generic.List[string]]::new()
+          $parts.Add("# Material Router $version")
+          $parts.Add('')
+          $parts.Add($markerLine)
+          $parts.Add('')
+          $parts.Add("- Release tag: ``$tag``")
+          $parts.Add("- Commit: ``$env:GITHUB_SHA``")
+          $parts.Add('- App version: ' + $version)
+          if ($env:DIMSUM_IMAGE) { $parts.Add("- Dim sum photo asset: ``$($env:DIMSUM_IMAGE)``") }
+          $parts.Add('')
+          $parts.Add("## What's changed")
+          $parts.Add('')
+          foreach ($l in $log) { $parts.Add("- $l") }
+          $parts.Add('')
+          $parts.Add('## Line count')
+          $parts.Add('')
+          $counts = Get-Content -LiteralPath 'release-counts.md' -Raw
+          $parts.Add($counts.TrimEnd())
+          $parts.Add('')
+          $parts.Add('## Workflow timing')
+          $parts.Add('')
+          $parts.Add("- Workflow started: $env:WORKFLOW_STARTED_AT (UTC, runner-reported job start)")
+          $parts.Add('- Workflow completed: (stamped at publication)')
+          $parts.Add('- Duration: (stamped at publication)')
+          $parts.Add('')
+          $parts.Add('## Verification status')
+          $parts.Add('')
+          $parts.Add('No local test suites were run for this build, and GitHub Actions workflows run no test or lint gates for this project - that is standing project policy, not an oversight. Checks that did run live in the tasks that changed the code and are reported there.')
+          $parts.Add('')
+          $parts.Add('## Unsigned installers')
+          $parts.Add('')
+          $parts.Add('This installer is **not code-signed**, permanently by project policy. Microsoft Windows SmartScreen may show "Windows protected your PC" on first run - choose More info, then Run anyway, only after verifying your download against SHA256SUMS.txt attached to this release.')
+          ($parts -join "`r`n") | Set-Content -LiteralPath 'release-notes.md' -Encoding utf8NoBOM
+          Write-Host '--- release-notes.md ---'
+          Get-Content -LiteralPath 'release-notes.md'
+
+      # Publishes exactly one new uniquely-tagged non-draft release carrying
+      # every staged artifact including the dim-sum photo. Nothing else may
+      # create a release for a push.
+      - name: Publish release
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $completedAt = (Get-Date).ToUniversalTime().ToString('o')
+          $totalSeconds = [int]([datetime]::Parse($completedAt) - [datetime]::Parse($env:WORKFLOW_STARTED_AT)).TotalSeconds
+          if ($totalSeconds -lt 0) { $totalSeconds = 0 }
+          $duration = '{0:d2}:{1:d2}:{2:d2}' -f ([int][math]::Floor($totalSeconds / 3600)), ([int][math]::Floor(($totalSeconds % 3600) / 60)), ($totalSeconds % 60)
+
+          $notes = Get-Content -LiteralPath 'release-notes.md' -Raw
+          $notes = $notes.Replace('- Workflow completed: (stamped at publication)', "- Workflow completed: $completedAt (UTC)")
+          $notes = $notes.Replace('- Duration: (stamped at publication)', "- Duration: $duration (job start through release publication)")
+          Set-Content -LiteralPath 'release-notes.md' -Value $notes -Encoding utf8NoBOM
+
+          $assets = @(Get-ChildItem -LiteralPath 'release-assets' | ForEach-Object { $_.FullName })
+          if (-not $assets) { throw 'no staged assets to attach' }
+          gh release create $env:RELEASE_TAG `
+            --title "Material Router $($env:RELEASE_TAG)" `
+            --notes-file release-notes.md `
+            --latest `
+            @assets
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed with exit code $LASTEXITCODE" }
+          Write-Host "published $($env:RELEASE_TAG) at commit $($env:GITHUB_SHA); job-start-to-publication duration $duration"
+
+      # Safety net: keep build evidence even when an earlier step failed.
+      # Artifact upload never gates anything and never masks the failure.
       - name: Collect build artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -60,6 +363,6 @@ jobs:
         with:
           name: squirrel-windows
           path: |
-            dist/squirrel-windows/**
+            dist/**
           if-no-files-found: warn
           retention-days: 14
