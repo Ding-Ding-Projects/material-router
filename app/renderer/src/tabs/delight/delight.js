@@ -212,6 +212,12 @@ palette.register({
 });
 
 // -- boot global effects -------------------------------------------------------------
+// Locks enforcement, School mode, the ADHD accommodations (including the
+// momentum ticker) and the dim-sum surprise boot ONCE per app and stay alive
+// after this tab closes, by design: a toy lock must keep protecting its
+// element and time awareness must keep ticking whether or not Modes &
+// Delights is open. They are once-only subscriptions/timers guarded against
+// double-boot, so there is nothing for a tab destroy() to release here.
 
 whenReady(() => {
   bootLocks();

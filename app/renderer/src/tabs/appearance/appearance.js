@@ -832,6 +832,8 @@ registerTab({
   label: { en: 'Appearance', zh: '外觀' },
   get icon() { return iconFromPath('M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z'); },
   init: render,
+  mount: ensureNarratorWired,
+  destroy: releaseNarrator,
 });
 
 // Settings-shell section (searchable entries teleport to exact controls).
@@ -946,10 +948,29 @@ function bootstrap() {
     });
   });
 
-  narrator.init();
+  ensureNarratorWired();
   scheduled.initEngine();
   watchStripForIcons();
   settings.onChange(() => scheduleEmojiReconcile());
+}
+
+// The narrator documents its consumption as "call once at tab init" and
+// returns a teardown for exactly this lifecycle: wired while the Appearance
+// tab exists, released when it closes, re-wired on its next mount. The
+// scheduler loop, the mr:tab-edit-appearance listener and the strip icon
+// watcher deliberately stay alive after close - they serve the whole app and
+// the whole tab strip, not this panel.
+let narratorTeardown = null;
+
+function ensureNarratorWired() {
+  if (narratorTeardown || !narrator.supported()) return;
+  narratorTeardown = narrator.init();
+}
+
+function releaseNarrator() {
+  if (!narratorTeardown) return;
+  try { narratorTeardown(); } catch { /* release errors stay isolated */ }
+  narratorTeardown = null;
 }
 
 if (typeof document === 'undefined') {

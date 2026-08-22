@@ -107,6 +107,20 @@ to main exclusively through one IPC channel (`mr:invoke`) whose domains are allo
 | Authenticator | `app/renderer/src/tabs/authenticator/*` + its own main-side journal bridge (landed) | `vault.js` (encrypted records, scrypt), IPC `vault:*` incl. auth-journal routes |
 | Plumbing/site | `.github/workflows/release.yml` + `pages.yml`, `*.bat`, `site/`, `scripts/count-lines.mjs`, `scripts/dependency-manifest.json`, `core/updater-banner.js` wiring in `app.js` (landed) | release workflow publishes real tagged releases; count table refreshed by CI |
 
+Tab close lifecycle seam: a tab def may declare an optional
+`destroy(container, api)` (`api = { id, reason: 'close' }`), which `closeTab`
+calls once per mount, BEFORE removing the panel node, with double-destroy
+guarded by the strip (`destroyedSinceMount`, cleared on the next `init`). It is
+where a tab module unsubscribes events (`bridge.onAll` gives one combined
+unsubscribe), clears timers and aborts streams; a later remount re-runs
+`init()`, which re-registers everything released. Implemented by Server
+(pollers + uptime ticker + language sub + port timer), Builder (stream sub +
+debounces + in-flight abort), Authenticator (code ticker), and the Appearance
+tab's narrator feed per its documented "call once at tab init" teardown.
+Import-time app-global subscriptions (dim-sum surprise, locks, School mode,
+ADHD momentum ticker, utility conversion engine, updater banner) are once-only
+by design and intentionally survive their tab.
+
 ## Stability contract for lanes
 
 - Keep IPC channel names (`domain:name`), event names (`log`, `toast`, `server-status`,

@@ -2,6 +2,11 @@
 // overflows by scrolling (never silently clips), supports pinning, named
 // collapsible groups with move-via-picker, rename, close guards, drag reorder,
 // full keyboard operation with roving tabindex, and persistence.
+// Tab lifecycle: def.init(container) runs once on first activation,
+// def.mount?(panel) on every activation, and def.destroy?(container, api) on
+// close - the place for a tab module to unsubscribe events, clear timers and
+// abort streams instead of leaving them alive until remount. A later remount
+// re-runs init(), which re-registers everything the destroy released.
 // Events dispatched for lanes: 'mr:tab-edit-appearance' {tabId, anchor},
 // 'mr:tab-lock-element' {tabId, anchor}.
 // Owned by Foundation Core lane.
@@ -15,7 +20,7 @@ import { createSearchBar, matchesQuery } from './searchbar.js';
 const GROUP_COLORS = ['#7d5260', '#6750a4', '#2b6777', '#526e2b', '#8c5a10', '#6d4b94'];
 
 const state = {
-  /** @type {Array<{id,label:{en,zh},icon?,init,mount}>} */
+  /** @type {Array<{id,label:{en,zh},icon?,init,mount?,destroy?}>} */
   defs: [],
   order: [],
   pinned: [],
@@ -31,6 +36,8 @@ const state = {
   buttonsById: new Map(),
   panelsById: new Map(),
   mountedIds: new Set(),
+  /** Ids whose destroy() already ran since their last mount (double-destroy guard). */
+  destroyedSinceMount: new Set(),
   closeGuard: null,
   saveTimer: null,
 };
@@ -603,10 +610,27 @@ function buildPanels() {
 function ensureMounted(def, panel) {
   if (state.mountedIds.has(def.id)) return;
   state.mountedIds.add(def.id);
+  state.destroyedSinceMount.delete(def.id); // fresh mount: a later close may destroy again
   try {
     def.init(panel);
   } catch (err) {
     panel.append(h('p', { class: 'mr-typography-body-medium', style: 'color:var(--md-sys-color-error)' }, `${def.id}: init failed - ${err.message}`));
+  }
+}
+
+/**
+ * Run def.destroy once per mount, before the panel is removed so the module
+ * can still read its own DOM while unsubscribing. Never throws into closeTab.
+ */
+function runDestroy(def, panel) {
+  if (typeof def.destroy !== 'function') return;
+  if (!state.mountedIds.has(def.id)) return; // never initialized: nothing to release
+  if (state.destroyedSinceMount.has(def.id)) return; // double-destroy guard
+  state.destroyedSinceMount.add(def.id);
+  try {
+    def.destroy(panel, { id: def.id, reason: 'close' });
+  } catch (err) {
+    console.error(`[tabs] destroy failed for "${def.id}":`, err);
   }
 }
 
@@ -659,6 +683,7 @@ export async function closeTab(tabId) {
   delete state.customLabels[tabId];
 
   const panel = state.panelsById.get(tabId);
+  runDestroy(def, panel);
   if (panel) {
     panel.remove();
     state.panelsById.delete(tabId);
