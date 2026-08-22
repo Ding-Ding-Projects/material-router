@@ -195,6 +195,33 @@ jobs:
           Copy-Item -LiteralPath $setup.FullName -Destination 'release-assets/'
           Copy-Item -LiteralPath (Join-Path $src 'RELEASES') -Destination 'release-assets/'
           Copy-Item -LiteralPath $full.FullName -Destination 'release-assets/'
+
+          # RELEASES BOM guard: Squirrel's manifest writer can emit a UTF-8
+          # BOM (EF BB BF) ahead of the first SHA1 - v0.1.0 shipped such an
+          # asset and it had to be repaired out of band. A client comparing a
+          # BOM-prefixed token against the real SHA1 can never match and fails
+          # closed forever, so the published feed must start with hex. Raw
+          # bytes only: Set-Content would silently re-encode, so
+          # ReadAllBytes/WriteAllBytes carry the payload through untouched.
+          $stagedReleases = Join-Path 'release-assets' 'RELEASES'
+          $releasesBytes = [IO.File]::ReadAllBytes($stagedReleases)
+          if ($releasesBytes.Length -ge 3 -and $releasesBytes[0] -eq 0xEF -and $releasesBytes[1] -eq 0xBB -and $releasesBytes[2] -eq 0xBF) {
+            $stripped = New-Object byte[] ($releasesBytes.Length - 3)
+            [Array]::Copy($releasesBytes, 3, $stripped, 0, $stripped.Length)
+            [IO.File]::WriteAllBytes($stagedReleases, $stripped)
+            Write-Host 'stripped UTF-8 BOM from the staged RELEASES manifest'
+            # Re-read from disk: assert the artifact, not the variable.
+            $releasesBytes = [IO.File]::ReadAllBytes($stagedReleases)
+          }
+          if ($releasesBytes.Length -le 0) { throw 'staged RELEASES is empty after BOM handling' }
+          $firstByte = $releasesBytes[0]
+          $isHexStart = (($firstByte -ge 0x30 -and $firstByte -le 0x39) -or ($firstByte -ge 0x41 -and $firstByte -le 0x46) -or ($firstByte -ge 0x61 -and $firstByte -le 0x66))
+          if (-not $isHexStart) {
+            throw ("staged RELEASES starts with byte 0x{0:X2}, not an ASCII hex digit - refusing to publish a manifest the updater cannot parse" -f $firstByte)
+          }
+          $headBytes = @($releasesBytes | Select-Object -First ([Math]::Min(16, $releasesBytes.Length)))
+          Write-Host ("RELEASES first bytes: " + (($headBytes | ForEach-Object { $_.ToString('X2') }) -join ' '))
+
           Assert-Staged (Join-Path 'release-assets' $setup.Name)
           Assert-Staged (Join-Path 'release-assets' 'RELEASES')
           Assert-Staged (Join-Path 'release-assets' $full.Name)
