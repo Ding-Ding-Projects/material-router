@@ -10,6 +10,7 @@ import { h, writeClipboard, saveText, debounce } from '../../core/util.js';
 import { t, copy, addBundle } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { invoke, on } from '../../core/bridge.js';
+import * as settings from '../../core/settings.js';
 import { toast } from '../../core/toasts.js';
 import * as history from '../../core/history.js';
 import * as palette from '../../core/palette.js';
@@ -74,6 +75,41 @@ function initBuilder(container) {
   mount(container);
   subscribeStream();
   registerPaletteItems();
+  ensureLanguagePass();
+}
+
+/**
+ * Live retranslate: the composer state lives at module level (and in the
+ * localStorage draft), so a language-mode change or School-mode flip rebuilds
+ * through the existing mount() path without losing work. Preserved across
+ * the rebuild: scroll position, the uncommitted stop-sequence input text,
+ * the last response body (mount clears it; restored and re-rendered), and the
+ * preset search query. In-flight streams keep streaming into the fresh panel.
+ */
+let languageUnsub = null;
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panel = document.getElementById('mr-tab-panel-builder');
+    if (!panel?.isConnected) return;
+    const scroll = panel.scrollTop;
+    const stopDraft = ui.stopInput?.value ?? '';
+    const priorResponse = responseResult;
+    const presetQuery = ui.presetSearch?.get?.() ?? null;
+    mount(panel);
+    if (stopDraft) ui.stopInput.value = stopDraft;
+    if (priorResponse) {
+      responseResult = priorResponse;
+      renderResponse();
+    }
+    if (presetQuery?.text) {
+      ui.presetSearch.set(presetQuery.text);
+      if (presetQuery.mode === 'regex') ui.presetSearch.setMode('regex');
+    }
+    registerPaletteItems();
+    panel.scrollTop = scroll;
+  });
 }
 
 // ---------------------------------------------------------------------------

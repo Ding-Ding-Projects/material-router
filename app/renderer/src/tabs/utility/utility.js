@@ -12,6 +12,7 @@
 import { h, fmtBytes, saveText } from '../../core/util.js';
 import { invoke, on } from '../../core/bridge.js';
 import { addBundle, t, copy } from '../../core/i18n.js';
+import * as settings from '../../core/settings.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 import { destructiveConfirm, openModal, promptText } from '../../core/dialogs.js';
@@ -1733,46 +1734,100 @@ registerTab({
 });
 
 // ---- command palette coverage ------------------------------------------------
+// Wrapped so the language-change pass can re-register localized titles
+// (palette.register replaces entries by id).
 
-palette.register({
-  id: 'utility.openConverter',
-  title: t('utility.tab.converter'),
-  section: 'Actions',
-  keywords: ['converter', 'convert', 'toolbox', 'pdf', 'zip', 'wav', 'csv'],
-  run: () => switchSubTab('converter'),
-});
-palette.register({
-  id: 'utility.openOllama',
-  title: t('utility.tab.ollama'),
-  section: 'Actions',
-  keywords: ['ollama', 'model', 'pull', 'chat', 'llm'],
-  run: () => switchSubTab('ollama'),
-});
-palette.register({
-  id: 'utility.refreshOllama',
-  title: t('ollama.status.refresh'),
-  section: 'Actions',
-  keywords: ['ollama', 'status', 'refresh'],
-  run: () => refreshStatus(),
-});
-palette.register({
-  id: 'utility.refreshCatalog',
-  title: t('ollama.store.refresh'),
-  section: 'Actions',
-  keywords: ['ollama', 'catalog', 'store', 'refresh'],
-  run: () => refreshCatalog(),
-});
-palette.register({
-  id: 'utility.newChat',
-  title: t('ollama.chat.new'),
-  section: 'Actions',
-  keywords: ['ollama', 'chat', 'new'],
-  run: () => { switchSubTab('ollama'); newSession(); },
-});
-palette.register({
-  id: 'utility.troubleshooting',
-  title: t('ollama.trouble.open'),
-  section: 'Actions',
-  keywords: ['ollama', 'troubleshooting', 'help'],
-  run: () => switchSubTab('guide'),
-});
+function registerUtilityPaletteItems() {
+  palette.register({
+    id: 'utility.openConverter',
+    title: t('utility.tab.converter'),
+    section: 'Actions',
+    keywords: ['converter', 'convert', 'toolbox', 'pdf', 'zip', 'wav', 'csv'],
+    run: () => switchSubTab('converter'),
+  });
+  palette.register({
+    id: 'utility.openOllama',
+    title: t('utility.tab.ollama'),
+    section: 'Actions',
+    keywords: ['ollama', 'model', 'pull', 'chat', 'llm'],
+    run: () => switchSubTab('ollama'),
+  });
+  palette.register({
+    id: 'utility.refreshOllama',
+    title: t('ollama.status.refresh'),
+    section: 'Actions',
+    keywords: ['ollama', 'status', 'refresh'],
+    run: () => refreshStatus(),
+  });
+  palette.register({
+    id: 'utility.refreshCatalog',
+    title: t('ollama.store.refresh'),
+    section: 'Actions',
+    keywords: ['ollama', 'catalog', 'store', 'refresh'],
+    run: () => refreshCatalog(),
+  });
+  palette.register({
+    id: 'utility.newChat',
+    title: t('ollama.chat.new'),
+    section: 'Actions',
+    keywords: ['ollama', 'chat', 'new'],
+    run: () => { switchSubTab('ollama'); newSession(); },
+  });
+  palette.register({
+    id: 'utility.troubleshooting',
+    title: t('ollama.trouble.open'),
+    section: 'Actions',
+    keywords: ['ollama', 'troubleshooting', 'help'],
+    run: () => switchSubTab('guide'),
+  });
+}
+
+registerUtilityPaletteItems();
+
+// ---- live retranslate ----------------------------------------------------------
+// The Toolbox rebuilds from module-level state through the existing init()
+// path, so a language-mode change (or School mode forcing English) re-renders
+// every pane without a restart. Preserved across the rebuild, cheaply:
+// the active sub-tab, both scroll positions, the uncommitted chat composer and
+// chat system-prompt drafts (restored into their fresh textareas), and the
+// converter catalog query (its search bar is recreated for the new
+// placeholder). Harness profile fields commit to profileDraft on input and
+// survive through state. Open dialogs are separate modal surfaces and keep
+// their current copy until reopened - noted honestly rather than rebuilt.
+
+let languageUnsub = null;
+function ensureUtilityLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panel = document.getElementById('mr-tab-panel-utility');
+    if (!panel?.isConnected || !subTabEls) return;
+    const activeName = ['converter', 'ollama', 'guide']
+      .find((n) => subTabEls[n]?.classList.contains('mr-active')) ?? 'converter';
+    const panelScroll = panel.scrollTop;
+    const hostScroll = ollamaEls?.scrollTop ?? 0;
+    const composerDraft = panel.querySelector('.mr-util-composer')?.value ?? '';
+    const systemDraft = panel.querySelector('.mr-util-system')?.value ?? '';
+    const catalogQuery = converterSearch?.get?.() ?? null;
+
+    panel.textContent = '';
+    // Recreate the converter search bar so its placeholder retranslates;
+    // the captured query is re-adopted below.
+    converterSearch = null;
+    init(panel);
+    switchSubTab(activeName);
+    if (catalogQuery?.text) {
+      converterSearch.set(catalogQuery.text);
+      if (catalogQuery.mode === 'regex') converterSearch.setMode('regex');
+    }
+    const composerEl = panel.querySelector('.mr-util-composer');
+    if (composerEl && composerDraft) composerEl.value = composerDraft;
+    const systemEl = panel.querySelector('.mr-util-system');
+    if (systemEl && systemDraft) systemEl.value = systemDraft;
+    if (ollamaEls) ollamaEls.scrollTop = hostScroll;
+    panel.scrollTop = panelScroll;
+    registerUtilityPaletteItems();
+  });
+}
+
+ensureUtilityLanguagePass();

@@ -859,10 +859,13 @@ registerSettingsSection({
 
 // Command palette coverage (titles resolved at registration, matching the
 // foundation's own palette items). Guarded so non-browser import checks that
-// lack HTMLElement can still load this module.
-if (typeof HTMLElement !== 'undefined') {
+// lack HTMLElement can still load this module. Wrapped so the language-change
+// pass can re-register localized titles (palette.register replaces by id).
+function registerAppearancePaletteItems() {
+  if (typeof HTMLElement === 'undefined') return;
   for (const def of paletteItems()) palette.register(def);
 }
+registerAppearancePaletteItems();
 
 function paletteItems() {
   return [
@@ -950,6 +953,29 @@ function bootstrap() {
   scheduled.initEngine();
   watchStripForIcons();
   settings.onChange(() => scheduleEmojiReconcile());
+  ensureLanguagePass();
+}
+
+/**
+ * Live retranslate: the panel rebuilds from the existing render functions and
+ * reads every control value back from settings, so no draft text exists to
+ * lose (colour/font pickers re-adopt persisted values). An open element-editor
+ * popover keeps functioning against its settings-backed overrides; it closes
+ * itself when its anchor scrolls away, and its own title refreshes on the
+ * next open.
+ */
+let languageUnsub = null;
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    registerAppearancePaletteItems();
+    const panel = document.getElementById('mr-tab-panel-appearance');
+    if (!panel?.isConnected) return;
+    const scroll = panel.scrollTop;
+    render(panel);
+    panel.scrollTop = scroll;
+  });
 }
 
 if (typeof document === 'undefined') {

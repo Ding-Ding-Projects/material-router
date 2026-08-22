@@ -11,6 +11,7 @@ import { h } from '../../core/util.js';
 import { t, addBundle } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { registerSettingsSection } from '../../core/settings-ui.js';
+import * as settings from '../../core/settings.js';
 import * as palette from '../../core/palette.js';
 
 import { en } from './i18n/delight.en.js';
@@ -63,6 +64,60 @@ function render(container) {
   panel.append(host);
 
   showSection(activeSection);
+  ensureLanguagePass();
+}
+
+/**
+ * Live retranslate: rebuild the tab's own chrome (title, sub-tab labels) and
+ * re-invoke the active section's existing render function. Sub-sections with
+ * their own settings subscriptions (modes, school) re-render through those
+ * too; this pass keeps them consistent on School-mode flips as well.
+ * Draft safety: the ticket form and the attention-mode pin hold uncommitted
+ * text, so both are captured before the rebuild and restored afterwards (the
+ * ticket description re-fires its input listener so Submit re-enables).
+ */
+let languageUnsub = null;
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panelEl = document.getElementById('mr-tab-panel-delight');
+    if (!panelEl?.isConnected || !sectionHostRef) return;
+    const panelScroll = panelEl.scrollTop;
+    const hostScroll = sectionHostRef.scrollTop;
+    const drafts = {
+      ticketDesc: document.getElementById('mr-ticket-desc')?.value ?? '',
+      ticketCat: document.getElementById('mr-ticket-cat')?.value ?? null,
+      adhdPin: document.getElementById('mr-adhd-pin')?.value ?? null,
+    };
+    render(panelEl);
+    sectionHostRef.scrollTop = hostScroll;
+    panelEl.scrollTop = panelScroll;
+    const restoreDrafts = () => {
+      const descEl = document.getElementById('mr-ticket-desc');
+      if (descEl && drafts.ticketDesc && !descEl.value) {
+        descEl.value = drafts.ticketDesc;
+        // Re-fires the form's input listener so Submit re-enables honestly.
+        descEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      const catEl = document.getElementById('mr-ticket-cat');
+      if (catEl && drafts.ticketCat && !catEl.dataset.mrRestored) {
+        catEl.value = drafts.ticketCat;
+        catEl.dataset.mrRestored = '1';
+      }
+      const pinEl = document.getElementById('mr-adhd-pin');
+      if (pinEl && drafts.adhdPin != null && !pinEl.value) pinEl.value = drafts.adhdPin;
+    };
+    restoreDrafts();
+    // The tickets section renders asynchronously (it awaits its reload), so
+    // when it was the active section the form does not exist yet; retry
+    // briefly and only while the form was missing at the first attempt.
+    if (drafts.ticketDesc && !document.getElementById('mr-ticket-desc')) {
+      setTimeout(restoreDrafts, 60);
+      setTimeout(restoreDrafts, 250);
+    }
+    registerDelightPaletteItems();
+  });
 }
 
 function showSection(id) {
@@ -153,63 +208,69 @@ registerSettingsSection({
 });
 
 // -- command palette coverage ------------------------------------------------------
+// Wrapped so the language-change pass can re-register localized titles
+// (palette.register replaces entries by id).
 
-palette.register({
-  id: 'delight.open',
-  title: t('tabs.delight'),
-  section: 'Tabs',
-  run: () => { import('../../core/tabs.js').then(({ activate }) => activate('delight')); },
-});
-palette.register({
-  id: 'delight.support',
-  title: t('dl.tickets.title'),
-  section: 'Actions',
-  keywords: ['support', 'ticket', 'locked out', 'forgot password'],
-  run: () => openSupportDesk(null),
-});
-palette.register({
-  id: 'delight.school',
-  title: t('dl.common.sectionSchool'),
-  section: 'Settings',
-  keywords: ['school', 'english only'],
-  run: () => { import('../../core/tabs.js').then(({ activate }) => activate('delight')).then(() => showSection('school')); },
-});
-palette.register({
-  id: 'delight.adhd.focus',
-  title: t('dl.adhd.focus'),
-  section: 'Settings',
-  keywords: ['focus', 'dim'],
-  control(holder) {
-    const input = h('input', {
-      type: 'checkbox',
-      'aria-label': t('dl.adhd.focus'),
-      onchange: async (e) => {
-        const { set } = await import('../../core/settings.js');
-        await set('adhd.focus', Boolean(e.target.checked));
-      },
-    });
-    whenReady(() => {
-      import('../../core/settings.js').then(({ get }) => { input.checked = Boolean(get('adhd.focus', false)); });
-    });
-    holder.append(h('label', { class: 'm3-switch' }, input, h('span', { class: 'track', 'aria-hidden': 'true' }, h('span', { class: 'thumb' }))));
-  },
-  run() {
-    import('../../core/settings.js').then(async ({ get, set }) => {
-      await set('adhd.focus', !get('adhd.focus', false));
-    });
-  },
-});
-palette.register({
-  id: 'delight.adhd.lowStim',
-  title: t('dl.adhd.lowStim'),
-  section: 'Settings',
-  keywords: ['low stimulation', 'motion'],
-  run() {
-    import('../../core/settings.js').then(async ({ get, set }) => {
-      await set('adhd.lowStimulation', !get('adhd.lowStimulation', false));
-    });
-  },
-});
+function registerDelightPaletteItems() {
+  palette.register({
+    id: 'delight.open',
+    title: t('tabs.delight'),
+    section: 'Tabs',
+    run: () => { import('../../core/tabs.js').then(({ activate }) => activate('delight')); },
+  });
+  palette.register({
+    id: 'delight.support',
+    title: t('dl.tickets.title'),
+    section: 'Actions',
+    keywords: ['support', 'ticket', 'locked out', 'forgot password'],
+    run: () => openSupportDesk(null),
+  });
+  palette.register({
+    id: 'delight.school',
+    title: t('dl.common.sectionSchool'),
+    section: 'Settings',
+    keywords: ['school', 'english only'],
+    run: () => { import('../../core/tabs.js').then(({ activate }) => activate('delight')).then(() => showSection('school')); },
+  });
+  palette.register({
+    id: 'delight.adhd.focus',
+    title: t('dl.adhd.focus'),
+    section: 'Settings',
+    keywords: ['focus', 'dim'],
+    control(holder) {
+      const input = h('input', {
+        type: 'checkbox',
+        'aria-label': t('dl.adhd.focus'),
+        onchange: async (e) => {
+          const { set } = await import('../../core/settings.js');
+          await set('adhd.focus', Boolean(e.target.checked));
+        },
+      });
+      whenReady(() => {
+        import('../../core/settings.js').then(({ get }) => { input.checked = Boolean(get('adhd.focus', false)); });
+      });
+      holder.append(h('label', { class: 'm3-switch' }, input, h('span', { class: 'track', 'aria-hidden': 'true' }, h('span', { class: 'thumb' }))));
+    },
+    run() {
+      import('../../core/settings.js').then(async ({ get, set }) => {
+        await set('adhd.focus', !get('adhd.focus', false));
+      });
+    },
+  });
+  palette.register({
+    id: 'delight.adhd.lowStim',
+    title: t('dl.adhd.lowStim'),
+    section: 'Settings',
+    keywords: ['low stimulation', 'motion'],
+    run() {
+      import('../../core/settings.js').then(async ({ get, set }) => {
+        await set('adhd.lowStimulation', !get('adhd.lowStimulation', false));
+      });
+    },
+  });
+}
+
+registerDelightPaletteItems();
 
 // -- boot global effects -------------------------------------------------------------
 
