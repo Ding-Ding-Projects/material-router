@@ -44,7 +44,9 @@ function render(container) {
   );
 
   const listCol = h('div', { class: 'mr-docs-list' });
-  const reader = h('div', { class: 'mr-docs-article', role: 'region', 'aria-label': t('docs.articleRegion') });
+  // mr-md carries the shared renderer typography; without it article bodies
+  // fell back to UA defaults and inline code chips collided with descenders.
+  const reader = h('div', { class: 'mr-docs-article mr-md', role: 'region', 'aria-label': t('docs.articleRegion') });
   layout.append(listCol, reader);
 
   let currentId = null;

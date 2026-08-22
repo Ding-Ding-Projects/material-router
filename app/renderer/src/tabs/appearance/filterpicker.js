@@ -10,6 +10,7 @@ import { t } from '../../core/i18n.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 
 let openPicker = null; // only one picker popover at a time
+let pickerSeq = 0; // unique ids so the listbox can expose its focused option
 
 /**
  * createFilterPicker({ label, options:[{value,label,hint?,disabled?,reason?}],
@@ -70,8 +71,15 @@ export function createFilterPicker({ label, options = [], value = null, onChange
       onQuery: () => renderList(),
     });
 
-    const listEl = h('div', { class: 'mr-fp__list', role: 'listbox', 'aria-label': label });
-    const statusEl = h('div', { class: 'mr-typography-body-small', style: 'color:var(--md-sys-color-on-surface-variant);padding:0 12px 8px' });
+    const listId = `mr-fp-list-${(pickerSeq += 1)}`;
+    const listEl = h('div', { class: 'mr-fp__list', role: 'listbox', id: listId, 'aria-label': label });
+    // Result count is announced politely so screen readers hear filter hits.
+    const statusEl = h('div', {
+      class: 'mr-typography-body-small',
+      role: 'status',
+      'aria-live': 'polite',
+      style: 'color:var(--md-sys-color-on-surface-variant);padding:0 12px 8px',
+    });
     let focusedIdx = -1;
     /** @type {HTMLElement[]} */
     let rows = [];
@@ -90,6 +98,7 @@ export function createFilterPicker({ label, options = [], value = null, onChange
         const row = h('div', {
           class: `mr-fp__row${opt.disabled ? ' mr-fp__row--disabled' : ''}`,
           role: 'option',
+          id: `${listId}-opt-${rows.length}`,
           tabindex: '-1',
           'aria-selected': String(opt.value === current),
           'aria-disabled': opt.disabled ? 'true' : null,
@@ -120,9 +129,14 @@ export function createFilterPicker({ label, options = [], value = null, onChange
     }
 
     function setFocus(idx) {
-      if (!rows.length) return;
+      if (!rows.length) {
+        listEl.removeAttribute('aria-activedescendant');
+        return;
+      }
       focusedIdx = Math.max(0, Math.min(rows.length - 1, idx));
       rows.forEach((r, i) => r.classList.toggle('focused', i === focusedIdx));
+      // Expose the highlighted option so screen readers follow arrow moves.
+      listEl.setAttribute('aria-activedescendant', rows[focusedIdx].id);
       rows[focusedIdx]?.scrollIntoView({ block: 'nearest' });
     }
 
@@ -163,6 +177,7 @@ export function createFilterPicker({ label, options = [], value = null, onChange
       window.removeEventListener('resize', cleanup);
       window.removeEventListener('scroll', reposition, true);
       el.setAttribute('aria-expanded', 'false');
+      el.removeAttribute('aria-controls');
       if (openPicker?.owner === api) openPicker = null;
       el.focus();
     }
@@ -192,6 +207,7 @@ export function createFilterPicker({ label, options = [], value = null, onChange
     window.addEventListener('resize', cleanup);
     window.addEventListener('scroll', reposition, true);
     el.setAttribute('aria-expanded', 'true');
+    el.setAttribute('aria-controls', listId);
     renderList();
     reposition();
     queueMicrotask(() => search.focus());
