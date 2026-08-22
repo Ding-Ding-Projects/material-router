@@ -17,6 +17,10 @@ extraResources:
 win:
   icon: build/icons/icon.ico
   artifactName: ${productName}-${version}-Setup.${ext}
+  # Never reach for a signer at all, not even to skip one: electron-builder
+  # otherwise invokes signtool on every produced executable and only then
+  # reports "no signing info identified". Signing is permanently out of scope.
+  signAndEditExecutable: false
   target:
     - target: squirrel
       arch:

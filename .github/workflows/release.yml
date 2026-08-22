@@ -142,6 +142,21 @@ jobs:
         run: |
           npx electron-builder --win squirrel --publish never
           if ($LASTEXITCODE -ne 0) { throw "electron-builder failed with exit code $LASTEXITCODE" }
+          # The builder CLI can return before its asynchronous NuGet-pack phase
+          # has written RELEASES and the .full.nupkg. Poll for a bounded window
+          # so those files exist (or fail loudly listing what did land).
+          $dir = 'dist/squirrel-windows'
+          $deadline = [DateTime]::UtcNow.AddSeconds(180)
+          while (-not (Get-ChildItem -LiteralPath $dir -Filter '*.full.nupkg' -ErrorAction SilentlyContinue)) {
+            if ([DateTime]::UtcNow -gt $deadline) {
+              Write-Host "contents of $dir after 180s:"
+              Get-ChildItem -LiteralPath $dir | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+              throw 'no *.full.nupkg appeared within 180s of the build finishing'
+            }
+            Write-Host "waiting for squirrel nupkg packaging to settle..."
+            Start-Sleep -Seconds 5
+          }
+          Get-ChildItem -LiteralPath $dir | ForEach-Object { Write-Host "built: $($_.Name) ($($_.Length) bytes)" }
 
       # Every staged artifact must exist, be non-empty, and report NotSigned.
       # Signing is permanently out of scope, so a signed output means something
