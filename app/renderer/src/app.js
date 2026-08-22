@@ -84,9 +84,36 @@ async function boot() {
   }
 
   tabStrip.init({ defs: TABS, appEl });
+
+  // 9) Apply the persisted language mode to <html lang> + shell chrome, then
+  // keep applying it live whenever the mode changes (School mode forcing
+  // English presentation re-applies too). Tab panels retranslate through
+  // their own settings.onChange subscriptions.
+  applyLanguageMode();
+  settings.onChange((key) => {
+    if (key === 'general.languageMode' || key === 'school.active') applyLanguageMode();
+  });
+}
+
+/**
+ * Live language application for everything the shell owns: the document lang
+ * attribute, the frameless titlebar labels/aria, tab-strip labels, and the
+ * builtin palette item titles (palette.register replaces entries by id).
+ * Runs at boot and on every general.languageMode / school.active change.
+ */
+function applyLanguageMode() {
+  document.documentElement.lang = i18n.documentLangTag();
+  registerBuiltinPaletteItems();
+  const appEl = document.getElementById('mr-app');
+  if (appEl) buildTitlebar(appEl);
+  updateBadge(toasts.unreadCount());
+  tabStrip.refreshChrome();
 }
 
 function buildTitlebar(appEl) {
+  // Idempotent: a language-mode change rebuilds the bar in place (grid-area
+  // layout is position-independent, so re-appending is safe).
+  appEl.querySelector(':scope > .mr-titlebar')?.remove();
   const logo = h('span', { class: 'mr-titlebar__logo', 'aria-hidden': 'true' },
     svgIcon(ICONS.route));
   const name = h('span', { class: 'mr-titlebar__name' }, 'Material Router');

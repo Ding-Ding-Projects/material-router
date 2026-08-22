@@ -10,6 +10,16 @@ let currentNsCache = new Map();
 
 export const LANGUAGES = ['en', 'zh', 'bilingual'];
 
+const LANG_TAGS = { en: 'en', zh: 'zh-HK', bilingual: 'en' };
+
+/**
+ * BCP-47 tag for <html lang> matching the active presentation language.
+ * Bilingual renders English first ("EN · 粵"), so it tags as 'en'.
+ */
+export function documentLangTag(mode = languageMode()) {
+  return LANG_TAGS[mode] ?? 'en';
+}
+
 export function addBundle(ns, bundle) {
   bundles.set(ns, bundle);
   currentNsCache.delete(ns);

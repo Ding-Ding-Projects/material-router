@@ -65,6 +65,21 @@ export function init({ defs, appEl }) {
   });
 }
 
+/**
+ * Re-render strip chrome (tab labels, group headers, section titles) after a
+ * language-mode change. Strip state survives; focus returns to the tab that
+ * held it so keyboard users are not dumped on <body>.
+ */
+export function refreshChrome() {
+  if (!state.stripEl || !state.stripEl.isConnected) return;
+  const focusedId = document.activeElement?.dataset?.tabId ?? null;
+  renderStrip();
+  const refocus = focusedId ? state.buttonsById.get(focusedId) : null;
+  if (refocus) {
+    try { refocus.focus({ preventScroll: true }); } catch { /* not focusable */ }
+  }
+}
+
 /** Register a veto hook: fn(tabDef) -> boolean|Promise<boolean> (true = allow close). */
 export function setCloseGuard(fn) {
   state.closeGuard = fn;
