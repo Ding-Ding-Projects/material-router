@@ -21,6 +21,8 @@ export const DOMAINS = Object.freeze([
   'dialog',
   'shell',
   'docs', // offline article browser (bundled docs/articles)
+  'utility', // Toolbox lane: local file converter (sandboxed child conversions)
+  'ollama', // Toolbox lane: local Ollama suite manager (localhost API only)
 ]);
 
 const INVOKE_CHANNEL = 'mr:invoke';
