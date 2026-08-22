@@ -36,27 +36,27 @@
 <p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
 <main class="page" id="main">
 
-<h1>Platform <span class="bi-secondary">平台與發佈</span></h1>
+<h1>Platform <span class="bi-secondary" data-lang-zh>平台與發佈</span></h1>
 <p class="page-lead">Windows x64, Squirrel.Windows installer, unsigned by policy, with Chrome-style updates over HTTPS.</p>
 <p class="page-lead bi-secondary" data-lang-zh>Windows x64、Squirrel.Windows安裝程式、按政策唔簽名，更新走HTTPS。</p>
 <article class="article-body">
 
 <section id="behaviour" aria-labelledby="behaviour-h">
-  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
   
 <p>Releases ship a Squirrel.Windows installer targeting 64-bit Windows, produced by the repository build scripts (<code>build.bat</code> / <code>build-installer.bat</code>). Auto-updates follow the Squirrel model: the app checks an HTTPS feed, stages new versions, and installs them when you choose to restart.</p>
 <p class="bi-secondary" data-lang-zh>Release附Squirrel.Windows安裝程式，目標64-bit Windows，由repo自己嘅建置腳本（<code>build.bat</code> / <code>build-installer.bat</code>）生產。自動更新跟Squirrel模型：app查HTTPS feed、預存新版本、等你肯重啟先裝。</p>
 </section>
 
 <section id="configuration" aria-labelledby="configuration-h">
-  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
   
 <p>The updater exposes a manual check-for-updates action and shows availability without interrupting work; installation happens only after you choose to restart. Nothing else to configure.</p>
 <p class="bi-secondary" data-lang-zh>更新器有手動「檢查更新」掣，會顯示有冇新版本但唔打斷你做工；幾時裝由你揀重啟嗰刻決定。其他嘢毋須設定。</p>
 </section>
 
 <section id="failure-modes" aria-labelledby="failure-modes-h">
-  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
   
 <p><strong>Unsigned installers, stated plainly:</strong> this project permanently does not code-sign. Expect the Windows SmartScreen warning on first run — choose More info, then Run anyway — and verify downloads independently against SHA-256 digests published with each release where provided.</p>
 <ul>
@@ -69,14 +69,14 @@
 </section>
 
 <section id="security" aria-labelledby="security-h">
-  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
   
 <p>Update transport is HTTPS. There is no signature chain to rely on, so independent verification of downloads is your safeguard — disclosed here rather than implied away. No signing certificate exists in this project&rsquo;s toolchain, by policy.</p>
 <p class="bi-secondary" data-lang-zh>更新傳輸行HTTPS。冇簽名鏈可信，所以獨立核對下載檔就係你嘅保障 —— 呢度講明而唔含糊帶過。按政策，本項目工具鏈入面根本不存在簽名證書。</p>
 </section>
 
 <section id="verification" aria-labelledby="verification-h">
-  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
   
 <p>The installer installs, launches and uninstalls cleanly on Windows x64; published digests match attached artifacts byte for byte; the update feed serves valid metadata and a staged update installs on restart.</p>
 <p class="bi-secondary" data-lang-zh>喺Windows x64上安裝、啟動、解除安裝全部乾淨俐落；公佈嘅digest同附件逐位元組吻合；更新feed提供合法metadata，預存嘅更新喺重啟後順利裝上。</p>

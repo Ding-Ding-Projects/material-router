@@ -5,6 +5,7 @@
 import { registerContentBundles } from './content-i18n.js';
 import { addBundle, applyDom } from './i18n.js';
 import { getSettings, onSettings } from './store.js';
+import { debounce } from './util.js';
 import { registerSearchBundle } from './searchbar.js';
 import { registerRegexBundle } from './regex-builder.js';
 import { registerDialogBundle } from './dialogs.js';
@@ -56,6 +57,14 @@ function bootChrome() {
   onSettings(() => {
     applyDom();
     import('./tabs.js').then((m) => m.initTabs()).catch(() => { /* strip already present */ });
+  });
+
+  // journal settings mutations (debounced so sliders record once, not per tick)
+  import('./history.js').then(({ recordHistory }) => {
+    const debouncedRecord = debounce(() => {
+      recordHistory({ action: 'settings-changed', label: 'Settings · 設定' });
+    }, 1200);
+    onSettings(() => debouncedRecord());
   });
 
   const yearEl = document.getElementById('footer-year');

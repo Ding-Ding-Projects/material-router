@@ -76,22 +76,22 @@ function buildItems() {
         sel.addEventListener('change', () => { updateSettings({ language: sel.value }); rerenderRows(); });
         return sel;
       },
-      href: 'settings.html#language',
+      href: 'settings.html#sec-language',
     },
     {
       kind: 'setting', id: 'set-funny-en', label: t('set.funnyEn'), keywords: 'funny english humor level',
       control: () => sliderRow('funnyEn', s.funnyEn),
-      href: 'settings.html#tone',
+      href: 'settings.html#sec-tone',
     },
     {
       kind: 'setting', id: 'set-funny-zh', label: t('set.funnyZh'), keywords: 'funny chinese cantonese humor level',
       control: () => sliderRow('funnyZh', s.funnyZh),
-      href: 'settings.html#tone',
+      href: 'settings.html#sec-tone',
     },
     {
       kind: 'setting', id: 'set-emoji', label: t('set.emoji'), keywords: 'emoji dialogs toggle',
       control: () => switchRow('emojiOn', s.emojiOn),
-      href: 'settings.html#tone',
+      href: 'settings.html#sec-tone',
     },
     {
       kind: 'setting', id: 'set-theme', label: t('set.theme'), keywords: 'theme dark light system',
@@ -102,18 +102,18 @@ function buildItems() {
         sel.addEventListener('change', () => { updateSettings({ appearance: { theme: sel.value } }); });
         return sel;
       },
-      href: 'settings.html#appearance',
+      href: 'settings.html#sec-appearance',
     },
     {
       kind: 'setting', id: 'set-school', label: t('set.school'), keywords: 'school mode suppression',
       control: () => switchRow('schoolMode', s.schoolMode),
-      href: 'settings.html#modes',
+      href: 'settings.html#sec-modes',
     },
   );
   items.push(
     { kind: 'command', id: 'cmd-notifications', label: t('toast.center'), keywords: 'notifications bell', run: () => document.getElementById('notif-bell')?.click() },
-    { kind: 'command', id: 'cmd-export-settings', label: t('set.export'), keywords: 'export settings json', run: () => { location.href = 'settings.html#data'; setTimeout(() => document.getElementById('btn-export-settings')?.click(), 400); } },
-    { kind: 'command', id: 'cmd-dock', label: t('tb.dock'), keywords: 'dock tab strip position', run: () => { location.href = 'settings.html#tabs'; } },
+    { kind: 'command', id: 'cmd-export-settings', label: t('set.export'), keywords: 'export settings json', run: () => { location.href = 'settings.html#sec-data'; setTimeout(() => document.getElementById('btn-export-settings')?.click(), 400); } },
+    { kind: 'command', id: 'cmd-dock', label: t('tb.dock'), keywords: 'dock tab strip position', run: () => { location.href = 'settings.html#sec-tabs'; } },
   );
   return items;
 }
@@ -228,7 +228,9 @@ function openPalette() {
     if (item.run) { item.run(); return; }
     const [href, hash] = item.href.split('#');
     const here = location.pathname.split('/').pop() || 'index.html';
-    if (href === here) {
+    const hrefBase = href.split('/').pop();
+    const prefix = location.pathname.includes('/articles/') ? '../' : '';
+    if (hrefBase === here) {
       if (hash) {
         const target = document.getElementById(hash);
         if (target) { flashElement(target); return; }
@@ -239,7 +241,7 @@ function openPalette() {
       }
       return;
     }
-    location.href = hash ? `${href}#${hash}` : href;
+    location.href = `${prefix}${hrefBase}${hash ? `#${hash}` : ''}`;
   }
 
   list.addEventListener('keydown', (e) => {

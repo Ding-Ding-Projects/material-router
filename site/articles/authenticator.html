@@ -36,13 +36,13 @@
 <p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
 <main class="page" id="main">
 
-<h1>Authenticator <span class="bi-secondary">驗證器與保險庫</span></h1>
+<h1>Authenticator <span class="bi-secondary" data-lang-zh>驗證器與保險庫</span></h1>
 <p class="page-lead">An encrypted vault for secrets, a memory-hashed app lock, and a built-in TOTP authenticator surface in progress.</p>
 <p class="page-lead bi-secondary" data-lang-zh>秘密收喺加密保險庫、程式鎖用記憶體困難雜湊，仲有興建中建中嘅內置TOTP驗證器。</p>
 <article class="article-body">
 
 <section id="behaviour" aria-labelledby="behaviour-h">
-  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
   
 <p>The main process owns a vault for sensitive values such as provider keys. Encryption uses Electron <code>safeStorage</code> — DPAPI-backed on Windows, binding ciphertext to your user profile. Values are addressed by opaque identifiers; consumers hold references, never contents.</p>
 <p>The app lock derives a verifier with scrypt, a memory-hard KDF, so the stored verifier does not reverse into your secret. Unlocking gates vault-backed surfaces. A TOTP authenticator screen — register RFC 6238 entries, read rotating codes computed locally — is being built by the Authenticator lane.</p>
@@ -50,14 +50,14 @@
 </section>
 
 <section id="configuration" aria-labelledby="configuration-h">
-  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
   
 <p>Setting or changing the app lock happens in settings; the verifier is stored, never the secret. Vault entries appear when a feature stores a secret and disappear when their owner deletes them.</p>
 <p class="bi-secondary" data-lang-zh>設定或者更改程式鎖都喺設定入面做；儲存嘅係驗證值，永遠唔係秘密本身。某功能存秘密嗰陣保險庫條目就會出現，擁有者刪除佢哋嗰陣就會消失。</p>
 </section>
 
 <section id="failure-modes" aria-labelledby="failure-modes-h">
-  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
   
 <ul>
 <li>If OS encryption is unavailable, writes fail with an explicit error rather than storing anything unprotected.</li>
@@ -68,14 +68,14 @@
 </section>
 
 <section id="security" aria-labelledby="security-h">
-  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
   
 <p>Secrets are encrypted at rest with an OS-bound mechanism and never written to config files, exports, logs or history entries. scrypt makes brute-forcing a stolen verifier expensive. Redaction applies everywhere. Treat your Windows account as the boundary: DPAPI ties decryption to it, so protect the account.</p>
 <p class="bi-secondary" data-lang-zh>靜態秘密用作業系統綁定嘅機制加密，永不落入配置檔、匯出、日誌或者歷史。scrypt令偷到驗證值想暴力破解都要付出大代價。遮蔽原則放諸四海。你個Windows帳戶就係邊界：DPAPI將解密綁落去，所以帳戶本身要顧好。</p>
 </section>
 
 <section id="verification" aria-labelledby="verification-h">
-  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
   
 <p>Save a provider key and confirm the record holds a keyRef while the vault holds ciphertext, end-to-end requests succeed, and no log or export shows secret material. Set the lock, restart, confirm gating. Authenticator test vectors land with the finished surface.</p>
 <p class="bi-secondary" data-lang-zh>存一把供應商金鑰：確認紀錄只有keyRef、保險庫只有密文、請求端到端成功、日誌同匯出不見任何秘密材料。設鎖、重啟、確認把守有效。驗證器嘅標準測試向量會連同完成品一起交付。</p>

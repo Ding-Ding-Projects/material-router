@@ -450,38 +450,33 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-l
 .mole-cell[data-state="up"] { background: var(--md-sys-color-tertiary-container); }
 .ladder-mole-status { display: flex; gap: var(--mr-space-4); justify-content: space-between; }
 
-/* ---------- tab strip ---------- */
-body { display: flex; min-height: 100vh; flex-direction: row; }
+/* ---------- tab strip (fixed rail; content padded to match the dock) ---------- */
 #tabstrip-root { display: contents; }
 .tabstrip {
+  position: fixed;
+  z-index: 90;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 216px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   background: var(--md-sys-color-surface-container-low);
   padding: var(--mr-space-2);
-  min-width: 208px;
-  max-width: 280px;
-  overflow: hidden;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-right: 1px solid var(--md-sys-color-outline-variant);
 }
-.tabstrip.dock-right { order: 2; border-right: none; border-left: 1px solid var(--md-sys-color-outline-variant); }
-.tabstrip.dock-top, .tabstrip.dock-bottom {
-  flex-direction: row;
-  flex-wrap: nowrap;
-  min-width: 0;
-  max-width: none;
-  width: 100%;
-  height: auto;
-  min-height: 52px;
-  position: sticky;
-  border-right: none;
-}
-.tabstrip.dock-top { order: -1; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
-.tabstrip.dock-bottom { order: 9; border-top: 1px solid var(--md-sys-color-outline-variant); }
-body.dock-column { flex-direction: column; }
+/* content offset follows the chosen dock */
+body { padding-left: 224px; }
+body.dock-right { padding-left: 0; padding-right: 224px; }
+.tabstrip.dock-right { left: auto; right: 0; border-right: none; border-left: 1px solid var(--md-sys-color-outline-variant); }
+
+body.dock-top { padding-left: 0; padding-top: 64px; }
+.tabstrip.dock-top { left: 0; right: 0; top: 0; bottom: auto; width: auto; height: auto; max-height: 44vh; flex-direction: row; flex-wrap: nowrap; align-items: center; border-right: none; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+body.dock-bottom { padding-left: 0; padding-bottom: 64px; }
+.tabstrip.dock-bottom { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: auto; max-height: 44vh; flex-direction: row; flex-wrap: nowrap; align-items: center; border-right: none; border-top: 1px solid var(--md-sys-color-outline-variant); }
 
 .tab {
   display: flex;
@@ -521,8 +516,11 @@ body.dock-column { flex-direction: column; }
 .tabstrip.dock-top .tab-group, .tabstrip.dock-bottom .tab-group { flex-direction: row; align-items: center; }
 .tabstrip.dock-top .tab-group-zone, .tabstrip.dock-bottom .tab-group-zone { flex-direction: row; border-left: none; border-top: 2px solid currentColor; padding-left: 0; padding-top: 2px; }
 
-.tab-overflow-btn { align-self: flex-end; margin-top: auto; }
-.tabstrip.dock-top .tab-overflow-btn, .tabstrip.dock-bottom .tab-overflow-btn { align-self: center; margin-top: 0; }
+.tab-overflow-btn { position: fixed; z-index: 95; }
+body:not(.dock-top):not(.dock-bottom):not(.dock-right) .tab-overflow-btn { left: 224px; top: 8px; }
+body.dock-right .tab-overflow-btn { right: 232px; top: 8px; }
+body.dock-top .tab-overflow-btn, body.dock-bottom .tab-overflow-btn { right: 8px; top: 68px; }
+body.dock-bottom .tab-overflow-btn { top: auto; bottom: 72px; }
 .tab[data-overflowed] { visibility: visible; }
 
 .ctx-menu {
@@ -641,12 +639,15 @@ body.dock-column { flex-direction: column; }
 .suggested { margin-top: var(--mr-space-7); padding-top: var(--mr-space-4); border-top: 1px solid var(--md-sys-color-outline-variant); }
 .suggested ul { display: flex; gap: var(--mr-space-3); flex-wrap: wrap; list-style: none; padding: 0; }
 
-/* bilingual secondary lines */
+/* bilingual secondary lines: zh duplicates hide in English mode; in Chinese
+   and bilingual modes both tracks stay visible (stated in About). */
+html[lang='en'] [data-lang-zh] { display: none; }
 .bi-secondary { display: block; color: var(--md-sys-color-on-surface-variant); font-size: 0.85em; font-weight: 400; }
+h1 .bi-secondary, h2 .bi-secondary, h3 .bi-secondary { display: inline-block; margin-left: 8px; }
 
 /* session chip / next action */
 .session-chip {
-  position: fixed; left: var(--mr-space-4); top: var(--mr-space-4);
+  position: fixed; left: 50%; transform: translateX(-50%); top: var(--mr-space-2);
   z-index: 230;
   background: var(--md-sys-color-inverse-surface);
   color: var(--md-sys-color-inverse-on-surface);
@@ -656,7 +657,7 @@ body.dock-column { flex-direction: column; }
 }
 .next-action {
   position: fixed; left: var(--mr-space-4); bottom: var(--mr-space-4);
-  z-index: 230;
+  z-index: 235;
   display: flex; gap: var(--mr-space-2); align-items: center;
   background: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-on-primary-container);
@@ -699,27 +700,32 @@ html.reduce-motion .rainbow-accent { animation-duration: 3600s; } /* effectively
 }
 @media (max-width: 720px) {
   :root { --site-maxw: 100%; }
-  body { flex-direction: column; }
-  .tabstrip, .tabstrip.dock-left, .tabstrip.dock-right {
+  /* narrow screens: the strip becomes a fixed top bar whatever the dock choice,
+     and content padding follows it */
+  body, body.dock-top, body.dock-bottom, body.dock-right {
+    padding-left: 0; padding-right: 0; padding-top: 60px; padding-bottom: 0;
+  }
+  .tabstrip, .tabstrip.dock-left, .tabstrip.dock-right, .tabstrip.dock-top, .tabstrip.dock-bottom {
+    left: 0; right: 0; top: 0; bottom: auto;
+    width: auto; height: auto; max-height: 40vh;
     flex-direction: row;
     flex-wrap: nowrap;
+    align-items: center;
     min-width: 0; max-width: none;
-    width: 100%; height: auto;
-    min-height: 52px;
-    position: sticky; top: 0;
+    position: fixed;
     border-right: none; border-left: none;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
-    order: -1;
-    overflow-x: hidden;
+    border-top: none;
   }
-  .tabstrip-pinned { flex-direction: row; border-bottom: none; }
+  .tabstrip-pinned { flex-direction: row; border-bottom: none; padding: 0 var(--mr-space-2) 0 0; margin: 0; }
   .tab-group { flex-direction: row; align-items: center; }
   .tab-group-zone { flex-direction: row; border-left: none; padding-left: 0; }
   main.page { padding: var(--mr-space-4) var(--mr-space-4) var(--mr-space-8); }
   .asset-list { columns: 1; }
   .toast-host { left: var(--mr-space-4); right: var(--mr-space-4); max-width: none; }
+  .tab-overflow-btn, body.dock-top .tab-overflow-btn, body.dock-bottom .tab-overflow-btn { right: 8px; top: 64px; }
   .dimsum-card { width: min(200px, 60vw); }
-  .next-action { bottom: auto; top: var(--mr-space-4); }
+  .next-action { bottom: var(--mr-space-4); top: auto; }
   .session-chip { display: none; }
 }
 @media (max-width: 380px) {

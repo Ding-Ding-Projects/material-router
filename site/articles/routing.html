@@ -36,13 +36,13 @@
 <p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
 <main class="page" id="main">
 
-<h1>Routing <span class="bi-secondary">路由與格式翻譯</span></h1>
+<h1>Routing <span class="bi-secondary" data-lang-zh>路由與格式翻譯</span></h1>
 <p class="page-lead">The router accepts OpenAI and Anthropic wire formats on loopback endpoints and translates between them automatically — requests, responses and streaming chunks.</p>
 <p class="page-lead bi-secondary" data-lang-zh>路由器喺本地端點同時收OpenAI同Anthropic兩種wire format，並且自動雙向翻譯 —— 請求、回應、串流chunks全部搞掂。</p>
 <article class="article-body">
 
 <section id="behaviour" aria-labelledby="behaviour-h">
-  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
   
 <p>The server listens on <code>127.0.0.1</code>, port <code>8787</code> by default, and serves four routes:</p>
 <table><tr><th>Route</th><th>Purpose</th></tr>
@@ -55,14 +55,14 @@
 </section>
 
 <section id="configuration" aria-labelledby="configuration-h">
-  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
   
 <p>Host and port live in app settings and apply when the listener restarts; CORS and bearer-token authentication are independent toggles. The 10&nbsp;MB body limit and the 120-second upstream deadline are fixed values in v0.1.0. Translation itself has no switches to misconfigure.</p>
 <p class="bi-secondary" data-lang-zh>主機同埠喺app設定入面，重啟listener之後生效；CORS同bearer-token認證係獨立開關。10&nbsp;MB請求上限同120秒上游死線喺v0.1.0係固定值。翻譯本身冇任何掣可以整錯。</p>
 </section>
 
 <section id="failure-modes" aria-labelledby="failure-modes-h">
-  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
   
 <ul>
 <li>Body over 10 MB → HTTP 413. Malformed JSON → HTTP 400 with a descriptive message.</li>
@@ -76,7 +76,7 @@
 </section>
 
 <section id="security" aria-labelledby="security-h">
-  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
   
 <ul>
 <li>Loopback-only by default; changing the bind host exposes the proxy to your network, and bearer-token auth should be enabled if you do.</li>
@@ -87,7 +87,7 @@
 </section>
 
 <section id="verification" aria-labelledby="verification-h">
-  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
   
 <pre><code>curl http://127.0.0.1:8787/health
 curl http://127.0.0.1:8787/v1/models</code></pre>

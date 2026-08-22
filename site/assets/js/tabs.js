@@ -105,9 +105,13 @@ function loadState() {
 let STATE = loadState();
 const save = () => storage.set('tabstate', STATE);
 
+/* Pages live at site root; article pages live one level down. */
+const HREF_BASE = location.pathname.includes('/articles/') ? '../' : '';
+const pageHref = (page) => `${HREF_BASE}${page.href}`;
+
 export function currentPageId() {
   const here = location.pathname.split('/').pop() || 'index.html';
-  const page = PAGES.find((p) => p.href === here || p.href === `${here}`);
+  const page = PAGES.find((p) => p.href.split('/').pop() === here);
   return page ? page.id : PAGES[0].id;
 }
 
@@ -172,7 +176,7 @@ function render() {
     const lockedHere = !!getLock(id) && !isUnlocked(id);
     const btn = el('a', {
       class: 'tab' + (id === current ? ' is-active' : '') + (lockedHere ? ' is-locked' : ''),
-      href: page.href,
+      href: pageHref(page),
       role: 'tab',
       'aria-selected': id === current ? 'true' : 'false',
       tabindex: id === current ? '0' : '-1',
@@ -193,7 +197,7 @@ function render() {
     btn.addEventListener('click', (e) => {
       if (getLock(id) && !isUnlocked(id)) {
         e.preventDefault();
-        promptUnlock(id, labelOf(id), btn, () => { location.href = page.href; });
+        promptUnlock(id, labelOf(id), btn, () => { location.href = pageHref(page); });
       }
     });
     btn.addEventListener('keydown', (e) => {
@@ -343,7 +347,7 @@ function openOverflowMenu(anchor, ids) {
   for (const id of ids) {
     const page = PAGES.find((p) => p.id === id);
     const mi = el('button', { type: 'button', class: 'ctx-item', role: 'menuitem', text: STATE.labels[id] || t(page.labelKey) });
-    mi.addEventListener('click', () => { closeMenus(); location.href = page.href; });
+    mi.addEventListener('click', () => { closeMenus(); location.href = pageHref(page); });
     menu.append(mi);
   }
   placeMenu(menu, anchor);

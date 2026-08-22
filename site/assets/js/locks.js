@@ -37,6 +37,7 @@ export function registerLockBundle(addBundle) {
       'lk.change': 'Change credential',
       'lk.none': 'No locks yet. Right-click any tab to add one.',
       'lk.unlockBtn': 'Unlock…',
+      'lk.pwshort': 'Use at least 4 characters.',
     },
     zh: {
       'lk.create': '鎖上呢個分頁……',
@@ -62,6 +63,7 @@ export function registerLockBundle(addBundle) {
       'lk.change': '換憑證',
       'lk.none': '仲未有鎖。右擊任何分頁就可以加。',
       'lk.unlockBtn': '解鎖……',
+      'lk.pwshort': '起碼四個字符。',
     },
   });
 }
@@ -104,7 +106,7 @@ export function createLockWizard(tabId, tabTitle, onDone) {
     const now = Date.now();
     if (methodSel.value === 'password') {
       if (pwIn.value.length < 4) {
-        err.textContent = '≥ 4';
+        err.textContent = t('lk.pwshort');
         err.hidden = false;
         return;
       }
