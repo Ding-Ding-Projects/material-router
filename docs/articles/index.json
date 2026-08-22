@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-22T18:25:58.678Z",
+  "count": 6,
+  "articles": [
+    {
+      "id": "api-builder",
+      "file": "api-builder.md",
+      "title": "API builder",
+      "summary": "The API builder will let you compose, save, and send AI requests entirely inside Material Router — no separate terminal client, no hand-edited JSON files."
+    },
+    {
+      "id": "appearance",
+      "file": "appearance.md",
+      "title": "Appearance",
+      "summary": "Material Router uses Material Design 3 throughout — color roles, typography, shape, elevation, and motion all come from one token set applied to every surface, including"
+    },
+    {
+      "id": "endpoints",
+      "file": "endpoints.md",
+      "title": "Endpoints",
+      "summary": "Material Router listens on the loopback interface at http://127.0.0.1:8787 by default. Four routes are available."
+    },
+    {
+      "id": "getting-started",
+      "file": "getting-started.md",
+      "title": "Getting started",
+      "summary": "Material Router is an open-source desktop app for Windows that acts as a local, bring-your-own-key AI router: point your existing AI tools at it, configure the providers you alr..."
+    },
+    {
+      "id": "keyboard-shortcuts",
+      "file": "keyboard-shortcuts.md",
+      "title": "Keyboard shortcuts",
+      "summary": "The shortcuts below cover the application shell as shipped in the foundation release. More arrive as feature lanes land; the command palette remains the fastest way to"
+    },
+    {
+      "id": "providers-keys",
+      "file": "providers-keys.md",
+      "title": "Providers and keys",
+      "summary": "Material Router is bring-your-own-key: it never bundles accounts or credits. You connect the providers you already use, attach their API keys, and tell the router"
+    }
+  ]
+}
