@@ -66,6 +66,25 @@ export const zh = {
   // errors
   'err.deadline': '等極都未等到 app 回應，要求已經超時。',
 
+  // history restore（歷史補償動作）
+  'restore.snapMissing': '呢條紀錄還原所需嘅資料已經唔再存放。',
+  'restore.providerGone': '呢個供應商已經唔存在，冇嘢可以移除。',
+  'restore.providerBack': '同一編號嘅供應商已經重新存在，所以冇改動過任何嘢。',
+  'restore.ruleGone': '呢條規則已經唔存在，冇嘢可以移除。',
+  'restore.ruleBack': '同一編號嘅規則已經重新存在，所以冇改動過任何嘢。',
+  'restore.providerMissingForEdit': '呢個供應商喺嗰次修改之後已經被刪除，所以冇得再復原嗰次修改。',
+  'restore.ruleMissingForEdit': '呢條規則喺嗰次修改之後已經被刪除，所以冇得再復原嗰次修改。',
+  'restore.detailKeyKept': '復原新增 · 已存放金鑰（{ref}）保留喺保險庫',
+  'restore.detailNoKey': '復原新增 · 冇存放過金鑰',
+  'restore.detailProviderRestored': '已還原被刪除嘅供應商紀錄',
+  'restore.detailKeyIntact': '（佢存放嘅金鑰 {ref} 仍然完好）',
+  'restore.detailKeyGone': '（佢嘅 API 金鑰已隨刪除移除，要重新輸入）',
+  'restore.detailReverted': '已將欄位還原做之前嘅數值',
+  'restore.detailUndoRuleAdd': '復原新增 · 已移除當時新增嘅規則',
+  'restore.detailRuleReverted': '已將規則還原做之前嘅數值',
+  'restore.detailRuleRestored': '已還原被刪除嘅規則，連同之前嘅優先度',
+  'restore.detailReordered': '已套用之前嘅規則排序',
+
   // palette
   'palette.add': '新增供應商',
   'palette.testAll': '測試所有已啟用供應商',

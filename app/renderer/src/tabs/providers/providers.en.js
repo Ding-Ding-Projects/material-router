@@ -65,6 +65,25 @@ export const en = {
   // errors
   'err.deadline': 'The request timed out before the app answered.',
 
+  // history restore (journal compensating actions)
+  'restore.snapMissing': 'The details needed to undo this entry are no longer stored.',
+  'restore.providerGone': 'This provider no longer exists, so there is nothing to remove.',
+  'restore.providerBack': 'A provider with this id already exists again; nothing was changed.',
+  'restore.ruleGone': 'This rule no longer exists, so there is nothing to remove.',
+  'restore.ruleBack': 'A rule with this id already exists again; nothing was changed.',
+  'restore.providerMissingForEdit': 'That provider was deleted after this change, so the edit can no longer be undone.',
+  'restore.ruleMissingForEdit': 'That rule was deleted after this change, so the edit can no longer be undone.',
+  'restore.detailKeyKept': 'undo of add · stored key {ref} kept in the vault',
+  'restore.detailNoKey': 'undo of add · no key was stored',
+  'restore.detailProviderRestored': 'restored the deleted provider record',
+  'restore.detailKeyIntact': '(its stored key {ref} is intact)',
+  'restore.detailKeyGone': '(its API key was removed by the delete and must be entered again)',
+  'restore.detailReverted': 'reverted fields to their previous values',
+  'restore.detailUndoRuleAdd': 'undo of add · removed the created rule',
+  'restore.detailRuleReverted': 'reverted the rule to its previous values',
+  'restore.detailRuleRestored': 'restored the deleted rule with its previous priority',
+  'restore.detailReordered': 'applied the previous rule order',
+
   // palette
   'palette.add': 'Add provider',
   'palette.testAll': 'Test all enabled providers',

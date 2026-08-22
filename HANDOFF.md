@@ -1,8 +1,15 @@
-# Handoff - Foundation
+# Handoff - Material Router
 
-State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (86 app modules clean). Integration edits made by the integrator: updater-banner import wired in app/renderer/src/app.js, docs manifest regenerated, ROADMAP Phase 1 ticks applied, platform index section corrected. The two foundation repairs from the utility lane (ESM loader pathToFileURL, MAIN_DIR for createWindow) are present.
-feature lanes depend on exists, runs, and is named. Lane surfaces are working placeholder
-cards except the docs browser, which is functional.
+State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
+clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
+authenticator offline article joined `docs/articles/` with its manifest regenerated,
+the Providers lane's journal actions gained real `history.onRestore` implementations
+(`app/renderer/src/tabs/providers/restore.js`), README lane annotations were removed,
+and ROADMAP Phase 2 now records verification state. Integration edits made by the
+integrator earlier: updater-banner import wired in app/renderer/src/app.js, docs
+manifest regenerated, ROADMAP Phase 1 ticks applied, platform index section
+corrected. The two foundation repairs from the utility lane (ESM loader
+pathToFileURL, MAIN_DIR for createWindow) are present.
 
 ## How to build / run
 
@@ -35,18 +42,19 @@ center, history, settings shell, dialogs, markdown renderer). The sandboxed rend
 to main exclusively through one IPC channel (`mr:invoke`) whose domains are allowlisted in
 `ipc.js`. Preload is CommonJS (`preload.cjs`) because sandboxed preloads cannot be ESM.
 
-## Seam map (lane -> owned paths)
+## Seam map (lane -> owned paths; all nine landed)
 
 | Lane | Owned paths | Existing seams it builds on |
 | --- | --- | --- |
-| Builder | `app/renderer/src/tabs/builder/*` | IPC `builder:*` domain; `translator.js` for translate-preview |
-| Providers | `app/renderer/src/tabs/providers/*` | IPC `providers:*` + `vault:*`; `providers-store.js` CRUD/rules/modelsCache |
-| Server | `app/renderer/src/tabs/server/*` | IPC `server:get-status/start/stop`; `logs:query`; `mr:event` `log` + `server-status` channels |
-| Appearance | `app/renderer/src/tabs/appearance/*` | `core/tokens.css` (extend via presets, never raw colors); `mr:tab-edit-appearance` event from tab context menu |
-| Delight | `app/renderer/src/tabs/delight/*` | `i18n.schoolModeActive()` hook, `emojiToggleOn()` gate, `dialogs.destructiveConfirm` (upgrade in place), `mr:tab-lock-element` event, `vault.hashSecret/verifySecret` |
-| Utility | `app/renderer/src/tabs/utility/*` | `core/md.js`, `core/searchbar.js`, `util.fileOpen/saveText/saveBlob` |
-| Authenticator | `app/renderer/src/tabs/authenticator/*` | `vault.js` (encrypted records, scrypt), IPC `vault:*` |
-| Plumbing/site | `.github/`, `*.bat`, `site/`, README count block | release workflow TODO markers; `scripts/count-lines.mjs` table |
+| Foundation Core | `app/main/*`, `app/preload/preload.cjs`, renderer shell (`core/history.js`, `core/tabs.js`, `core/palette.js`, `core/searchbar.js`, `docs` tab) | owns every seam below; lanes extend, never rename |
+| Builder | `app/renderer/src/tabs/builder/*` (landed) | IPC `builder:*` domain; `translator.js` for translate-preview |
+| Providers | `app/renderer/src/tabs/providers/*` incl. `restore.js` for journal restore hooks (landed) | IPC `providers:*` + `vault:*`; `providers-store.js` CRUD/rules/modelsCache |
+| Server | `app/renderer/src/tabs/server/*` (landed) | IPC `server:get-status/start/stop`; `logs:query`; `mr:event` `log` + `server-status` channels |
+| Appearance | `app/renderer/src/tabs/appearance/*` (landed) | `core/tokens.css` (extend via presets, never raw colors); `mr:tab-edit-appearance` event from tab context menu |
+| Delight | `app/renderer/src/tabs/delight/*` (landed) | implements the `i18n.schoolModeActive()` / `emojiToggleOn()` hooks, upgraded `destructiveConfirm`, `mr:tab-lock-element` event, `vault.hashSecret/verifySecret` |
+| Utility | `app/renderer/src/tabs/utility/*` (landed) | `core/md.js`, `core/searchbar.js`, `util.fileOpen/saveText/saveBlob`; extended the docs browser |
+| Authenticator | `app/renderer/src/tabs/authenticator/*` + its own main-side journal bridge (landed) | `vault.js` (encrypted records, scrypt), IPC `vault:*` incl. auth-journal routes |
+| Plumbing/site | `.github/workflows/release.yml` + `pages.yml`, `*.bat`, `site/`, `scripts/count-lines.mjs`, `scripts/dependency-manifest.json`, `core/updater-banner.js` wiring in `app.js` (landed) | release workflow publishes real tagged releases; count table refreshed by CI |
 
 ## Stability contract for lanes
 
@@ -58,14 +66,20 @@ to main exclusively through one IPC channel (`mr:invoke`) whose domains are allo
 - Deadlines must reject, not dangle; every async fs op propagates errors honestly.
 - CSS uses tokens from `tokens.css` only.
 
-## Known gaps (handed to lanes)
+## Known gaps (current truth after the gap-close pass)
 
-1. **Builder/Providers/Server/Appearance/Delight/Utility/Authenticator tabs** are placeholder cards (by design).
-2. **School mode, toy locks, unlock ladder, super confirmation, narrator, dim-sum surprise, ADHD modes** - hooks exist (`schoolModeActive`, `emojiToggleOn`, `destructiveConfirm`, `mr:tab-lock-element`), implementations pending (Delight lane).
-3. **Auto-updater** - feed config + UI pending (Plumbing lane); Squirrel target already configured.
-4. **`build.bat` toolchain bootstrap** is functional but basic (winget/portable fallback untested on a truly bare machine) - Plumbing lane hardens + adds digest manifest.
-5. **Release workflow** is a skeleton: tag uniqueness, line-count table, dim-sum asset, timing evidence are TODO-marked (Plumbing lane).
-6. **`/v1/models`** serves cached entries and refreshes stale providers in the background; first-run with zero providers returns an empty list until Providers lane adds config UI.
-7. **Regex step budget** bounds match attempts, not the engine's internal backtracking per attempt; the builder UI states this honestly.
-8. **History restore** is a registered-hook stub; lanes register real restore actions via `history.onRestore(action, fn)`.
-9. **Tab labels** re-render on language change only after a strip rebuild; live per-label refresh lands with Appearance lane's re-render pass.
+Resolved since the foundation handoff:
+
+1. ~~Placeholder feature tabs~~ - all nine lanes landed real surfaces; no placeholder cards remain.
+2. ~~School mode, toy locks, unlock ladder, super confirmation, narrator/TTS, dim-sum surprise, ADHD modes~~ - implemented by the Delight lane against the existing hooks (`schoolModeActive`, `emojiToggleOn`, `destructiveConfirm`, `mr:tab-lock-element`).
+3. ~~Auto-updater~~ - shipped by the Plumbing lane (`core/updater-banner.js`, imported in `app.js`); unsigned-feed disclosure everywhere.
+4. ~~`build.bat` toolchain bootstrap hardening + digest manifest~~ - `download-dependencies.bat` verifies pinned versions + SHA-256 against `scripts/dependency-manifest.json`.
+5. ~~Release workflow skeleton~~ - `release.yml` publishes uniquely tagged non-draft releases with the line-count table, dim-sum asset, SHA256SUMS and timing evidence; live tags v0.62-v0.67 prove the pipeline.
+6. ~~`/v1/models` empty until config UI~~ - the Providers tab ships provider/key/rule configuration; cached model lists populate from connection tests.
+
+Still open:
+
+7. **Regex step budget** bounds match attempts, not the engine's internal backtracking per attempt; the builder UI states this honestly. A hard backtracking bound would need a custom matcher.
+8. **History restore coverage is partial**: the Providers-lane journal actions (`providers.add/update/delete`, `rule.add/update/delete`, `rules.reorder`) have working `history.onRestore` implementations in `app/renderer/src/tabs/providers/restore.js`, appending compensating entries. Other recorded actions (appearance, presets, utility, authenticator.*) still have no renderer-journal restore hooks; the Authenticator tab restores through its own main-side journal instead.
+9. **Tab labels** re-render on language change only after a strip rebuild; live per-label refresh is still pending.
+10. **README captures** - real built-artifact captures of every surface are not yet embedded in the README (tracked unticked in ROADMAP Phase 2 for the captures pass).

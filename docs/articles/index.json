@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-22T20:27:07.478Z",
-  "count": 7,
+  "generatedAt": "2026-08-22T22:58:08.079Z",
+  "count": 8,
   "articles": [
     {
       "id": "api-builder",
@@ -13,6 +13,12 @@
       "file": "appearance.md",
       "title": "Appearance",
       "summary": "Material Router uses Material Design 3 throughout — color roles, typography, shape, elevation, and motion all come from one token set applied to every surface, including"
+    },
+    {
+      "id": "authenticator",
+      "file": "authenticator.md",
+      "title": "Built-in authenticator",
+      "summary": "Material Router ships a complete local authenticator: standard one-time-password entries TOTP and counter-based HOTP, their rotating codes, QR pairing, and an encrypted store th..."
     },
     {
       "id": "endpoints",
