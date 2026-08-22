@@ -141,6 +141,12 @@ function scaledCanvas(src, width, height) {
   return canvas;
 }
 
+// The conversion engine, Ollama chat stream and queue mirror below subscribe
+// ONCE at import time and are deliberately NOT released by a tab destroy():
+// they are app-level services (an in-flight batch must finish honestly even
+// if the Toolbox tab is closed), every DOM write is guarded with isConnected,
+// and re-subscribing on remount would stack duplicates. There are no timers
+// in this module to clear.
 on('utility-render-job', async (job) => {
   if (!job || !job.jobId) return;
   try {

@@ -11,7 +11,7 @@ import {
 } from '../../core/util.js';
 import { t, copy, addBundle } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
-import { invoke, on } from '../../core/bridge.js';
+import { invoke, onAll } from '../../core/bridge.js';
 import * as settings from '../../core/settings.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 import { openModal, destructiveConfirm, showMenu } from '../../core/dialogs.js';
@@ -49,7 +49,7 @@ const state = {
 
 /** @type {Record<string, any>} */
 let els = {};
-let unsubscribers = [];
+let eventsUnsub = null;
 let languageUnsub = null;
 let renderQueued = false;
 
@@ -939,10 +939,14 @@ async function loadExistingEntries() {
 function render(container) {
   buildSkeleton(container);
 
-  // Re-mount after a tab close must not stack duplicate listeners.
-  while (unsubscribers.length) unsubscribers.pop()();
-  unsubscribers.push(on('log', ingest));
-  unsubscribers.push(on('server-status', () => { void refreshStatus(); }));
+  // Re-mount after a tab close must not stack duplicate listeners: destroy()
+  // releases the group on close, and this defensive re-subscribe keeps a
+  // remount correct even if a close was skipped.
+  if (eventsUnsub) eventsUnsub();
+  eventsUnsub = onAll([
+    ['log', ingest],
+    ['server-status', () => { void refreshStatus(); }],
+  ]);
 
   void loadExistingEntries();
   void refreshStatus();
@@ -990,12 +994,23 @@ function onActivate() {
   }
 }
 
+/** Tab close: release the log/status pollers, uptime ticker and subs. */
+function destroyServer() {
+  if (eventsUnsub) { eventsUnsub(); eventsUnsub = null; }
+  if (languageUnsub) { languageUnsub(); languageUnsub = null; }
+  clearInterval(state._ticker);
+  state._ticker = null;
+  clearTimeout(portApplyTimer);
+  portApplyTimer = null;
+}
+
 registerTab({
   id: 'server',
   label: { en: 'Server & Logs', zh: '伺服器同日誌' },
   get icon() { return iconFromPath('M4 4h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm0 9h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Zm2 2v3h2v-3H6Zm10.5-9.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Zm0 9a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z'); },
   init: render,
   mount: onActivate,
+  destroy: destroyServer,
 });
 
 // -- command palette coverage ---------------------------------------------------

@@ -68,6 +68,7 @@ registerTab({
   label: { en: 'API Builder', zh: 'API 建造器' },
   get icon() { return iconFromPath('M11 3h2v6h-2V3Zm-8 9h18v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7Zm2 2v4h14v-4H5Zm5 2h4v1h-4v-1ZM4 5a1 1 0 0 1 1-1h3v2H6v2H4V5Zm16 0v3h-2V6h-2V4h3a1 1 0 0 1 1 1Z'); },
   init: initBuilder,
+  destroy: destroyBuilder,
 });
 
 function initBuilder(container) {
@@ -856,43 +857,60 @@ async function sendTestRequest() {
 }
 
 let streamSubscribed = false;
+let streamUnsub = null;
+function handleStreamEvent(evt) {
+  if (!evt || evt.requestId !== activeRequestId) return;
+  switch (evt.kind) {
+  case 'start':
+    ui.cancelBtn.style.display = '';
+    break;
+  case 'note':
+    appendStreamNote(evt.detail ?? '');
+    break;
+  case 'done': {
+    responseResult = {
+      status: evt.status, ms: evt.ms, bytes: evt.bytes,
+      response: evt.response ?? null, usage: evt.usage ?? extractUsage(null),
+      text: evt.text, truncated: Boolean(evt.truncated),
+      transcript: evt.transcript ?? '',
+      streamed: typeof evt.text === 'string',
+    };
+    finishRequest();
+    break;
+  }
+  case 'error':
+    responseResult = { error: { status: evt.status, type: evt.type, message: evt.message } };
+    finishRequest();
+    toast(tr('sendFailedT'), evt.message ?? '', { kind: 'error' });
+    break;
+  case 'aborted':
+    responseResult = { aborted: true };
+    finishRequest();
+    toast(tr('aborted'), '', { kind: 'info' });
+    break;
+  default:
+    break;
+  }
+}
+
 function subscribeStream() {
   if (streamSubscribed) return;
   streamSubscribed = true;
-  on('builder-stream', (evt) => {
-    if (!evt || evt.requestId !== activeRequestId) return;
-    switch (evt.kind) {
-      case 'start':
-        ui.cancelBtn.style.display = '';
-        break;
-      case 'note':
-        appendStreamNote(evt.detail ?? '');
-        break;
-      case 'done': {
-        responseResult = {
-          status: evt.status, ms: evt.ms, bytes: evt.bytes,
-          response: evt.response ?? null, usage: evt.usage ?? extractUsage(null),
-          text: evt.text, truncated: Boolean(evt.truncated),
-          transcript: evt.transcript ?? '',
-          streamed: typeof evt.text === 'string',
-        };
-        finishRequest();
-        break;
-      }
-      case 'error':
-        responseResult = { error: { status: evt.status, type: evt.type, message: evt.message } };
-        finishRequest();
-        toast(tr('sendFailedT'), evt.message ?? '', { kind: 'error' });
-        break;
-      case 'aborted':
-        responseResult = { aborted: true };
-        finishRequest();
-        toast(tr('aborted'), '', { kind: 'info' });
-        break;
-      default:
-        break;
-    }
-  });
+  streamUnsub = on('builder-stream', handleStreamEvent);
+}
+
+/** Tab close: drop the stream sub, pending debounces, and abort in-flight. */
+function destroyBuilder() {
+  if (streamUnsub) { streamUnsub(); streamUnsub = null; }
+  streamSubscribed = false;
+  saveDraft.cancel();
+  schedulePreview.cancel();
+  if (activeRequestId) {
+    const requestId = activeRequestId;
+    activeRequestId = null;
+    responseResult = { aborted: true };
+    invoke('builder:test-abort', { requestId }).catch(() => {});
+  }
 }
 
 function finishRequest() {
