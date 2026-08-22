@@ -51,11 +51,21 @@ export function isNewerVersion(candidate, current) {
 
 /**
  * Parse a Squirrel RELEASES manifest: lines of "<sha1> <filename> <size>".
- * Returns a Map keyed by lowercased filename -> { hash, size }.
+ * Tolerates a leading UTF-8 BOM (a feed re-encoded through a text writer
+ * carries EF BB BF ahead of the first SHA1), CRLF or LF line endings, and
+ * trailing whitespace on each line. Garbage lines are skipped rather than
+ * poisoning the rest of the manifest. Returns a Map keyed by lowercased
+ * filename -> { hash, size }.
  */
 export function parseReleasesManifest(text) {
   const entries = new Map();
-  for (const rawLine of String(text ?? '').split(/\r?\n/)) {
+  // Strip the BOM explicitly instead of leaning on String.prototype.trim():
+  // today's ECMAScript WhiteSpace table happens to include U+FEFF, so trim()
+  // absorbs it - but the digest comparison downstream must never depend on
+  // that trivia. Make the guarantee local and obvious.
+  let body = String(text ?? '');
+  if (body.charCodeAt(0) === 0xfeff) body = body.slice(1);
+  for (const rawLine of body.split(/\r\n|\r|\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
     const parts = line.split(/\s+/);
