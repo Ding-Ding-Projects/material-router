@@ -1,2 +1,17 @@
 /* appearance tab styles.
    Owned by its lane - extend freely; keep class names stable for tests. */
+
+.mr-appearance-panel {
+  padding: var(--mr-space-5);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.mr-appearance-panel .m3-card {
+  padding: var(--mr-space-4);
+}
+
+.mr-appearance-panel h2.m3-card__title {
+  margin-bottom: var(--mr-space-3);
+  font-size: calc(var(--md-sys-type-title-medium-size) * var(--mr-type-scale, 1));
+}
