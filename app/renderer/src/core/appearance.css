@@ -1,0 +1,339 @@
+/* Purpose: Appearance-lane shared stylesheet, loaded BY the lane's module
+   (index.html cannot be edited by lanes; CSP allows same-origin links).
+   Contains: typography/type-scale multipliers over tokens.css custom
+   properties, body-weight variable, the animated-rainbow block (sentinel
+   driven, ONE global duration, reduced motion settles one hue), and this
+   lane's overlay components (filter picker, colour picker, element editor,
+   setting rows). All colours reference tokens.css roles only; the rainbow's
+   functional data encoding is stated inline.
+   Owned by Appearance lane. */
+
+/* ===========================================================================
+   Type scale + body weight (consumed from engine-set variables)
+   =========================================================================== */
+
+html,
+body {
+  font-size: calc(var(--md-sys-type-body-medium-size, 14px) * var(--mr-type-scale, 1));
+  line-height: calc(20px * var(--mr-type-scale, 1));
+  font-weight: var(--mr-base-weight, 400);
+}
+
+.mr-typography-display-large { font-size: calc(var(--md-sys-type-display-large-size, 57px) * var(--mr-type-scale, 1)); line-height: calc(var(--md-sys-type-display-large-line, 64px) * var(--mr-type-scale, 1)); }
+.mr-typography-headline-small { font-size: calc(var(--md-sys-type-headline-small-size, 24px) * var(--mr-type-scale, 1)); line-height: calc(32px * var(--mr-type-scale, 1)); }
+.mr-typography-title-large { font-size: calc(var(--md-sys-type-title-large-size, 22px) * var(--mr-type-scale, 1)); line-height: calc(28px * var(--mr-type-scale, 1)); }
+.mr-typography-title-medium { font-size: calc(var(--md-sys-type-title-medium-size, 16px) * var(--mr-type-scale, 1)); line-height: calc(24px * var(--mr-type-scale, 1)); }
+.mr-typography-body-large { font-size: calc(var(--md-sys-type-body-large-size, 16px) * var(--mr-type-scale, 1)); line-height: calc(24px * var(--mr-type-scale, 1)); }
+.mr-typography-body-medium { font-size: calc(var(--md-sys-type-body-medium-size, 14px) * var(--mr-type-scale, 1)); line-height: calc(20px * var(--mr-type-scale, 1)); }
+.mr-typography-body-small { font-size: calc(var(--md-sys-type-body-small-size, 12px) * var(--mr-type-scale, 1)); line-height: calc(16px * var(--mr-type-scale, 1)); }
+.mr-typography-label-large { font-size: calc(var(--md-sys-type-label-large-size, 14px) * var(--mr-type-scale, 1)); line-height: calc(20px * var(--mr-type-scale, 1)); }
+.mr-typography-label-medium { font-size: calc(var(--md-sys-type-label-medium-size, 12px) * var(--mr-type-scale, 1)); line-height: calc(16px * var(--mr-type-scale, 1)); }
+
+/* ===========================================================================
+   Animated rainbow (accent sentinel 'rainbow').
+   Functional colour exception: the animated hue IS the data being shown -
+   it deliberately leaves tokens.css's fixed chrome palette while every
+   other role keeps its token value. Lightness/chroma are FIXED in OKLCH so
+   contrast holds across the whole cycle; only hue moves, interpolating
+   around the wheel (0 -> 360), never cutting across it.
+   =========================================================================== */
+
+@property --mr-rainbow-hue {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 215;
+}
+
+@keyframes mr-appearance-hue-cycle {
+  from { --mr-rainbow-hue: 0; }
+  to { --mr-rainbow-hue: 360; }
+}
+
+:root[data-mr-rainbow='on'] {
+  animation: mr-appearance-hue-cycle var(--mr-rainbow-duration, 12s) linear infinite;
+}
+:root[data-mr-rainbow='on'],
+:root[data-mr-rainbow='on'][data-theme='dark'] {
+  --md-sys-color-primary: oklch(0.52 0.155 var(--mr-rainbow-hue));
+  --md-sys-color-on-primary: oklch(0.99 0.01 var(--mr-rainbow-hue));
+  --md-sys-color-primary-container: oklch(0.90 0.065 var(--mr-rainbow-hue));
+  --md-sys-color-on-primary-container: oklch(0.30 0.10 var(--mr-rainbow-hue));
+  --md-sys-color-secondary: oklch(0.50 0.06 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-secondary-container: oklch(0.89 0.05 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-on-secondary-container: oklch(0.31 0.06 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-tertiary: oklch(0.51 0.11 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-tertiary-container: oklch(0.89 0.06 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-on-tertiary-container: oklch(0.30 0.09 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-inverse-primary: oklch(0.78 0.13 var(--mr-rainbow-hue));
+}
+:root[data-mr-rainbow='on'][data-theme='dark'] {
+  --md-sys-color-primary: oklch(0.78 0.135 var(--mr-rainbow-hue));
+  --md-sys-color-on-primary: oklch(0.26 0.08 var(--mr-rainbow-hue));
+  --md-sys-color-primary-container: oklch(0.36 0.105 var(--mr-rainbow-hue));
+  --md-sys-color-on-primary-container: oklch(0.91 0.055 var(--mr-rainbow-hue));
+  --md-sys-color-secondary: oklch(0.76 0.05 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-secondary-container: oklch(0.37 0.05 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-on-secondary-container: oklch(0.90 0.04 calc(var(--mr-rainbow-hue) + 20));
+  --md-sys-color-tertiary: oklch(0.77 0.10 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-tertiary-container: oklch(0.37 0.08 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-on-tertiary-container: oklch(0.90 0.05 calc(var(--mr-rainbow-hue) - 55));
+  --md-sys-color-inverse-primary: oklch(0.52 0.155 var(--mr-rainbow-hue));
+}
+
+/* Reduced motion settles on ONE deliberate hue instead of slowing down. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-mr-rainbow='on'] {
+    animation: none;
+    --mr-rainbow-hue: 215;
+  }
+}
+
+/* The sentinel swatch preview animates the same way (class-based so the
+   stored string is never parsed as a colour). */
+.mr-cp--rainbow {
+  background: conic-gradient(
+    hsl(0 70% 55%), hsl(60 70% 55%), hsl(120 70% 55%),
+    hsl(180 70% 55%), hsl(240 70% 55%), hsl(300 70% 55%), hsl(360 70% 55%)
+  ) !important;
+}
+
+/* ===========================================================================
+   Setting rows: title + progressive-disclosure info + provenance line
+   =========================================================================== */
+
+.mr-setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-2);
+  padding: var(--mr-space-2) 0;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.mr-setting-row:last-child { border-bottom: none; }
+.mr-setting-row__title { font-weight: 500; color: var(--md-sys-color-on-surface); }
+
+.mr-setting-info {
+  min-width: 28px;
+}
+.mr-setting-info > summary {
+  list-style: none;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-type-label-medium-size);
+  user-select: none;
+}
+.mr-setting-info > summary::-webkit-details-marker { display: none; }
+.mr-setting-info[open] > summary {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+.mr-wrap { flex-wrap: wrap; }
+
+/* ===========================================================================
+   Filter picker (searchable dropdown with anchored regex builder)
+   =========================================================================== */
+
+.mr-fp { max-width: 100%; }
+.mr-fp__label {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.mr-fp__value { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+.mr-fp__popover {
+  position: fixed;
+  z-index: 935;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-md);
+  box-shadow: var(--md-sys-elevation-3);
+  padding: var(--mr-space-2);
+  max-height: min(420px, calc(100vh - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mr-fp__list { overflow-y: auto; min-height: 0; }
+.mr-fp__row {
+  display: flex;
+  align-items: center;
+  gap: var(--mr-space-2);
+  padding: 8px 12px;
+  border-radius: var(--md-sys-shape-corner-sm);
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface);
+}
+.mr-fp__row.focused { background: var(--md-sys-color-surface-container-highest); }
+.mr-fp__row:hover:not(.mr-fp__row--disabled) { background: var(--md-sys-color-surface-container-highest); }
+.mr-fp__row--disabled { opacity: 0.45; cursor: default; }
+.mr-fp__row-label { flex: none; }
+.mr-fp__row-hint {
+  margin-left: auto;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-type-label-medium-size);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   Colour picker
+   =========================================================================== */
+
+.mr-cp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mr-space-2);
+  min-height: 36px;
+  padding: 3px 12px 3px 3px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline);
+  background: var(--md-sys-color-surface);
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface);
+}
+.mr-cp__fill {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+  display: inline-block;
+}
+.mr-cp__text { font-size: var(--md-sys-type-label-medium-size); color: var(--md-sys-color-on-surface-variant); }
+
+.mr-cp__popover {
+  position: fixed;
+  z-index: 936;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-lg);
+  box-shadow: var(--md-sys-elevation-3);
+  padding: var(--mr-space-3);
+  max-height: min(520px, calc(100vh - 24px));
+  overflow-y: auto;
+}
+
+.mr-cp__fieldwrap { position: relative; width: 232px; height: 148px; touch-action: none; }
+.mr-cp__fieldwrap--locked { opacity: 0.4; pointer-events: none; }
+.mr-cp__field { width: 100%; height: 100%; border-radius: var(--md-sys-shape-corner-sm); display: block; cursor: crosshair; }
+.mr-cp__cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-6px, -6px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  left: 0;
+  top: 0;
+}
+.mr-cp__hue {
+  width: 232px;
+  appearance: none;
+  height: 14px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: linear-gradient(to right, hsl(0 80% 55%), hsl(60 80% 55%), hsl(120 80% 55%), hsl(180 80% 55%), hsl(240 80% 55%), hsl(300 80% 55%), hsl(360 80% 55%));
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.mr-cp__alpha { width: 232px; accent-color: var(--md-sys-color-primary); }
+.mr-cp__num {
+  min-height: 34px;
+  width: 110px;
+  padding: 2px 8px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-xs);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+}
+.mr-cp__num--small { width: 64px; }
+.mr-cp__num:disabled { opacity: 0.45; }
+.mr-cp__preview {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: inline-block;
+  background: transparent;
+}
+.mr-cp__recent {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline);
+  cursor: pointer;
+  padding: 0;
+}
+.mr-cp__recents { gap: 6px; align-items: center; }
+
+/* ===========================================================================
+   Element editor (anchored, non-modal)
+   =========================================================================== */
+
+.mr-ee {
+  position: fixed;
+  z-index: 930;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  max-height: min(560px, calc(100vh - 24px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-lg);
+  box-shadow: var(--md-sys-elevation-3);
+  padding: var(--mr-space-3);
+}
+.mr-ee__body .mr-row { min-height: 36px; }
+.mr-ee__fontpopover { max-width: min(420px, calc(100vw - 24px)); }
+.mr-ee input[type='range'] { flex: 1 1 140px; min-width: 100px; }
+
+.mr-demo-target { outline-offset: 2px; }
+
+/* ===========================================================================
+   Presets
+   =========================================================================== */
+
+.mr-preset__swatch {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: inline-block;
+}
+
+/* Tab emoji icon (per-tab override applied through the strip observer) */
+.mr-appearance__tab-emoji {
+  font-size: 15px;
+  line-height: 1;
+  margin-right: 6px;
+}
+.mr-tab-btn.mr-appearance--emoji-icon > .mr-tab-btn__icon,
+.mr-tab-btn.mr-appearance--emoji-icon > svg { display: none; }
+
+/* Focus visibility for lane-built controls */
+.mr-fp:focus-visible,
+.mr-cp:focus-visible,
+.mr-setting-info > summary:focus-visible,
+.mr-demo-target:focus-visible {
+  outline: none;
+  box-shadow: var(--mr-focus-ring);
+}
+
+@media (max-width: 620px) {
+  .mr-ee { width: calc(100vw - 20px); left: 10px !important; right: 10px; }
+  .mr-cp__fieldwrap, .mr-cp__hue, .mr-cp__alpha { width: 200px; }
+}
