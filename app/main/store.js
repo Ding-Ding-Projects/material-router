@@ -117,7 +117,10 @@ function deletePath(obj, dotted) {
     node = node[keys[i]];
   }
   if (node == null || typeof node !== 'object') return false;
-  return delete node[keys[keys.length - 1]];
+  const last = keys[keys.length - 1];
+  // `delete obj.missingKey` is true in JS; only report a real removal.
+  if (!Object.prototype.hasOwnProperty.call(node, last)) return false;
+  return delete node[last];
 }
 
 /**

@@ -123,7 +123,7 @@ export class Vault {
   }
 
   _isObfuscated(buf) {
-    return buf.length >= 4 && buf.readUInt32BE(0) === 0x4f424631; // 'OFB1'
+    return buf.length >= 4 && buf.readUInt32BE(0) === 0x4f464231; // 'OFB1'
   }
 
   _obfuscate(value) {

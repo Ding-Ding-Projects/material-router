@@ -9,6 +9,7 @@ cards except the docs browser, which is functional.
 ```text
 npm install          # already done on this checkout; dev deps only
 npm start            # launch the Electron app
+npm test             # zero-dependency pure-core suite (node --test, 88 tests)
 npm run dist         # unsigned Squirrel installer -> dist/squirrel-windows/
 npm run icons        # regenerate brand assets (deterministic)
 npm run docs-index   # rebuild docs/articles/index.json
@@ -20,7 +21,57 @@ build-installer.bat  # release-shaped unsigned Setup.exe
 Verified on this machine: `npm install` exit 0 (Electron 33.4.11 binary present),
 `node scripts/generate-icons.mjs` produces all five assets with byte-identical social
 previews, all 26 renderer ES modules pass a Node import check, `package.json` parses.
-No test suites were run (none exist yet; CI runs none by policy).
+Local test suite exists and is green (see "Local test suite" below); CI still runs no
+test or lint jobs by policy.
+
+## Local test suite
+
+`npm test` runs `node --test` over `test/*.test.mjs` — node:test + node:assert only,
+zero new dependencies. Current verdict: **88 pass / 0 fail** on Windows, Node v24.19.0,
+four consecutive runs at the commit noted in git history. Coverage and boundaries:
+
+- `translator.js` — full-featured request translation both directions, OpenAI →
+  Anthropic → OpenAI round trip (system, roles, text, base64 image parts, tool_calls,
+  tools defs, stop sequences, max_tokens defaulting/precedence), non-streaming response
+  mapping both directions, both streaming converters (role-first chunk, text deltas,
+  tool-call argument accumulation, usage placement, error-event close, converter-pair
+  round trip), plus `upstreamHeaders`/`upstreamPath`/`errorBody`. Known limitation
+  asserted rather than hidden: prompt tokens arriving in late OpenAI usage chunks have
+  no home in an already-emitted Anthropic `message_start`, so they read as 0 there.
+- `store.js` — atomic write validity, unique temp names under concurrent saves, no
+  `.tmp` residue, retry behaviour via an in-process `fs.promises.rename`/
+  `fs.renameSync` patch seam (EPERM retried then succeeds, ENOENT never retried,
+  bounded 8-attempt exhaustion with `cause` preserved); JSONStore persistence/reload,
+  deep-merged defaults, dotted paths, subscribers, debounced saves, corrupt-file
+  quarantine, clone-safety, `flushSync`. Simulating a real open-handle rename failure
+  on Windows was deliberately not attempted (Node opens files FILE_SHARE_DELETE, so it
+  is platform-flaky); the injected-seam tests cover the same codes deterministically.
+- `providers-store.js` — CRUD normalization invariants, rule normalization, route
+  resolution order (priority > specificity exact/prefix/catchall > insertion order),
+  disabled provider/rule fall-through, fallback-to-default-model, blank-model handling,
+  TTL model cache expiry/invalidation, `refreshModels` against a local fixture server.
+- `upstream.js` — exercised against a real loopback `node:http` fixture server because
+  `callUpstream` uses global fetch with no injection seam: JSON success + byte count,
+  SSE parsing across chunk boundaries (multi-line data fields, `[DONE]` pass-through,
+  comment-only events skipped), upstream error normalization incl. credential redaction,
+  deadline rejection (`DeadlineError`, 504) on POST and GET paths, client-disconnect 499,
+  connection-refused mapping, `normalizeUpstreamError` unit cases.
+- `vault.js` — scrypt `hashSecret`/`verifySecret` round trip, wrong-password rejection,
+  fixed-salt determinism, hostile-input fail-closed; Vault persistence across instances
+  via the obfuscation fallback. Real `safeStorage` encryption paths need Electron and are
+  covered by runtime smoke passes, not here: under plain Node the suite provisions a
+  gitignored `node_modules/electron` stub (marker file `.material-router-test-stub`)
+  when no usable electron module exists, so `import { safeStorage } from 'electron'`
+  links and the documented unavailable-encryption path runs.
+
+Two product bugs were found by this suite and fixed in the same change:
+1. `vault.js` `_isObfuscated` compared against `0x4f424631` ("OBF1") while `_obfuscate`
+   writes header `'OFB1'` (`0x4f464231`) — every obfuscated secret was stored once and
+   then permanently unreadable through `getSecret()` on machines without OS keychain
+   encryption.
+2. `store.js` `deletePath` returned `true` for absent keys (`delete obj.missing` is
+   truthy in JS), so `JSONStore.delete()` reported success for keys that did not exist;
+  it now requires an own property before deleting and reports honestly.
 
 ## Architecture in one paragraph
 
