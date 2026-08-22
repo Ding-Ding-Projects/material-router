@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modes · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="Modes">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/modes.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="modes">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>Modes <span class="bi-secondary">語言與語氣模式</span></h1>
+<p class="page-lead">Three language modes and two funny-level sliders decide what language you read and how playful the voice is — never what the facts say.</p>
+<p class="page-lead bi-secondary" data-lang-zh>三種語言模式加兩條搞笑程度滑桿，決定你讀乜嘢話、把聲幾好玩 —— 但永遠唔會改事實。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  
+<p>Language modes: English, Chinese (Hong Kong), or bilingual with both tracks side by side. Both tracks ship inside the app; nothing downloads at runtime. Missing strings fall back to English rather than rendering blank.</p>
+<p>Funny levels: two sliders from 1 (fully serious) to 5 (maximum playfulness), shipped at 5, one per language. The level styles the voice of messages, tooltips and notifications — every category including errors — while versions, paths and causes stay exact.</p>
+<p>School mode presents English only and suppresses playful copy and novelty surfaces such as the dim-sum surprise; the unlock ladder starts directly at the arithmetic rung.</p>
+<p class="bi-secondary" data-lang-zh>語言模式：英文、中文（香港）、或者雙語並排。兩套文案都打包喺app入面，執行期唔使下載；缺字會退返英文而唔會留白。搞笑程度：兩條滑桿各管一種語言，1（全正經）到5（最好玩），預設5。佢影響所有訊息類別嘅語氣 —— 包括錯誤 —— 但版本、路徑、成因照樣準確。返學模式淨係出英文，收埋搞笑文案同點心驚喜呢類趣味表面；解鎖梯階直接由算術嗰關開始。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  
+<p>All three controls live in settings and persist locally: language mode, English funny level, Chinese funny level, School mode toggle. This documentation site implements the same contract for its own chrome — see its Settings page.</p>
+<p class="bi-secondary" data-lang-zh>三個控制都喺設定入面而且本地保存：語言模式、英文搞笑程度、中文搞笑程度、返學模式開關。呢個文檔網站自己嘅介面都實踐同一套契約 —— 見佢嘅設定頁。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  
+<ul>
+<li>Missing Chinese string → English fallback, never blank space.</li>
+<li>Slider values outside 1–5 clamp instead of breaking copy selection.</li>
+<li>School-mode enforcement is completing surface by surface; any gap is tracked openly rather than hidden.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>中文缺字 → 退英文，唔會空白；滑桿超出1–5會夾返入嚟；返學模式逐個表面補完中，任何缺口都會公開追蹤而唔會收埋。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  
+<p>Language and tone preferences carry no sensitive data and never leave the machine. Tone never changes factual content: errors identify the real failure and remedy at every level.</p>
+<p class="bi-secondary" data-lang-zh>語言同語氣偏好唔含敏感資料，亦永不離機。語氣永不改動事實：每級語氣之下，錯誤訊息照樣指出真正成因同補救方法。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  
+<p>Switch through all three modes and spot-check navigation, dialogs and notifications; move each slider between 1 and 5 and confirm tone changes while facts stay identical; restart and confirm persistence; enable School mode and confirm English presentation plus suppression of playful surfaces.</p>
+<p class="bi-secondary" data-lang-zh>三個模式逐一轉，抽查導航、對話框、通知；兩條滑桿由1推到5，確認語氣變咗但事實一字不差；重啟確認保存；開返學模式確認全英文兼收埋趣味表面。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="appearance.html">Appearance · 外觀</a> <a href="../settings.html">Site settings · 網站設定</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>

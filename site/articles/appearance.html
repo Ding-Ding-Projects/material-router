@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appearance · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="Appearance">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/appearance.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="appearance">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>Appearance <span class="bi-secondary">外觀自訂</span></h1>
+<p class="page-lead">Material Design 3 throughout: light/dark/system themes today, with per-element editors, presets and export/import as the Appearance lane lands them.</p>
+<p class="page-lead bi-secondary" data-lang-zh>全套Material Design 3：今日已有淺色／深色／跟系統主題；逐元素編輯、預設集、匯入匯出由Appearance lane陸續送上。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  
+<p>Shipped: light, dark and system themes from one token sheet applied to every surface — window chrome, tab strip, palette, notifications — switching together and persisting across restarts.</p>
+<p>In progress by the Appearance lane: per-element appearance editors opened from any element&rsquo;s context menu (with keyboard equivalents), covering fonts, sizes, weights, colours, spacing, radii, icons and states with per-property and global resets; density, accent/seed colour and font selection with live preview; contrast readouts inside colour controls.</p>
+<p class="bi-secondary" data-lang-zh>已交付：淺色、深色、跟系統三個主題，出自同一張token表，覆蓋所有表面 —— 窗框、分頁列、指令面板、通知 —— 一齊切換、重啟保存。Appearance lane施工中：任何元素嘅右鍵菜單（連鍵盤等效路徑）都可以打開逐元素外觀編輯器，涵蓋字體、字號、字重、顏色、間距、弧度、圖示、狀態，支援逐屬性同全局重置；仲有密度、重點色、字體選擇連即時預覽，以及色彩控制入面嘅對比度讀數。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  
+<p>Theme selection lives in app settings and persists locally. Appearance preferences are per-user, local-only and never synchronized. On this site, theme/accent/density/typography controls live in Settings → Appearance, persisted in browser storage.</p>
+<p class="bi-secondary" data-lang-zh>主題選擇喺app設定入面，本地保存。外觀偏好屬於每位使用者、只留喺本機、永不同步。本網站嘅主題／重點色／密度／字體排版控制喺「設定 → 外觀」，存喺瀏覽器storage。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  
+<ul>
+<li>An unreadable preference falls back to the shipped default theme rather than leaving surfaces unstyled.</li>
+<li>Following the system theme means the app moves when the OS does; pin a fixed theme if that is unwanted.</li>
+<li>Custom colours that harm legibility get flagged by contrast readouts once those controls ship.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>偏好檔讀唔到就退回出廠主題，唔會令界面冇樣式；跟系統主題即係作業系統變你就變，唔想就跟死一個固定主題；有害可讀性嘅自訂色，等對比度讀數推出後會被標示。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  
+<p>Appearance preferences contain no sensitive data, are stored with the rest of the app&rsquo;s local settings, and nothing about them leaves the machine.</p>
+<p class="bi-secondary" data-lang-zh>外觀偏好不含敏感資料，同其他本地設定一齊儲存，相關資訊永不離機。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  
+<p>Switch light/dark/system and confirm every visible surface updates together; restart and confirm persistence; flip the OS theme while set to system and confirm the app follows.</p>
+<p class="bi-secondary" data-lang-zh>淺色／深色／系統逐一切換，確認所有可見表面同步更新；重啟確認保存；設成「系統」之後反轉作業系統主題，確認app跟得上。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="modes.html">Modes · 語言模式</a> <a href="toolbox.html">Toolbox · 工具箱</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API builder · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="API builder">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/builder.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="builder">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>API builder <span class="bi-secondary">API請求產生器</span></h1>
+<p class="page-lead">A fully graphical way to compose, save and dispatch requests through the same routing pipeline external clients use.</p>
+<p class="page-lead bi-secondary" data-lang-zh>完全圖像化咁砌好、儲存、發送請求，行嘅係同一條外部client都會用嘅路由管線。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary">行為</span></h2>
+  
+<p>The builder composes requests in structured fields — model, system prompt, messages, sampling settings, tool definitions — with a picker between the OpenAI-format endpoint (<code>/v1/chat/completions</code>) and the Anthropic-format endpoint (<code>/v1/messages</code>). Named requests can be saved, reloaded, duplicated and deleted. Sending goes through the local server, so translation, rules, credential resolution, deadlines and redacted logging behave exactly as they do for external clients. Responses render inline with timing and token usage; streamed replies render progressively.</p>
+<p class="bi-secondary" data-lang-zh>產生器用結構化欄位砌請求 —— model、system prompt、訊息列表、取樣參數、工具定義 —— 並且可以喺OpenAI格式端點同Anthropic格式端點之間揀。具名請求可以儲存、載入、複製、刪除。發送經本地server行，所以翻譯、規則、金鑰解析、死線同遮蔽日誌全部同外部client一致。回應會連時間同用量inline顯示，串流回應逐段浮現。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary">設定</span></h2>
+  
+<p>Saved requests persist locally beside the rest of the app&rsquo;s data. No network access happens until you press send, at which point traffic flows only to <code>127.0.0.1:&lt;port&gt;</code> and onward to your chosen provider.</p>
+<p class="bi-secondary" data-lang-zh>已儲存嘅請求同其他app資料一齊存喺本地。你未㩒send之前唔會有任何網絡活動；㩒咗之後流量亦只去 <code>127.0.0.1:&lt;port&gt;</code> 同你揀嘅供應商。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary">失敗模式</span></h2>
+  
+<ul>
+<li>Incomplete requests (missing model, empty message list) are caught by validation before anything is sent.</li>
+<li>A payload whose format does not match the chosen endpoint surfaces the same structured errors described under Routing.</li>
+<li>Guard rails (body size, deadline) fail identically whether the request came from the builder or an external client.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>唔完整嘅請求（欠model、空訊息）會喺發送前被驗證攔住；格式同端點唔夾就會彈返Routing嗰邊講嘅結構化錯誤；guard rails（大小、死線）無論請求來自產生器定外部client都一視同仁。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary">安全考量</span></h2>
+  
+<p>Saved requests reference providers by name and never copy API keys; credentials attach at send time from the encrypted vault. Conversation content can be sensitive, so treat the saved-request store like any local document store.</p>
+<p class="bi-secondary" data-lang-zh>已儲存嘅請求只用名稱引用供應商，絕不複製API金鑰；憑證係發送嗰一刻先由加密保險庫附加。對話內容可能敏感，所以已儲存請求嗰個store要當一般本地文件庫看待。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary">驗證方法</span></h2>
+  
+<p>Compose and send through each endpoint once, save and reload a named request, confirm streamed output renders progressively, and confirm a failed route produces the same redacted error an external client would see.</p>
+<p class="bi-secondary" data-lang-zh>兩個端點各砌一次發送一次；儲存一個具名請求再載入；確認串流輸出逐段顯示；確認失敗路由彈出嘅錯誤同外部client見到嘅一樣而且已遮蔽。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="routing.html">Routing · 路由</a> <a href="providers.html">Providers & keys · 供應商與金鑰</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>
