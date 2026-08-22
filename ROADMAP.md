@@ -36,7 +36,7 @@ Items are never silently deleted; dropped ideas move to "Deliberately not doing"
 - [ ] Appearance lane: per-element appearance editors, presets, export/import, tab appearance from context menu event
 - [ ] Delight lane: School mode implementation, element toy locks + unlock ladder, super-confirmation gate upgrade, narrator/TTS, dim-sum surprise, ADHD modes
 - [ ] Utility lane: local file converter suite, extended toolbox, docs browser extensions
-- [ ] Authenticator lane: TOTP entries, QR pairing flow, RFC 6238 vectors
+- [x] Authenticator lane: TOTP entries, QR pairing flow, RFC 6238 vectors (verified against RFC 4226 + RFC 6238 Appendix B; QR encoder proven by decode-back with independent GF(256) syndrome check)
 - [ ] Site lane: GitHub Pages landing/documentation site with full feature contract parity
 
 ## Phase 2 - Hardening & platform

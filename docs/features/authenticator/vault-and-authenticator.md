@@ -66,3 +66,11 @@ same protected storage as everything else.
 **Partially shipped.** The encrypted vault and scrypt-based lock hashing are
 implemented in the main process and in active use. The TOTP authenticator screen is
 **in progress for the Authenticator lane**; see `ROADMAP.md`.
+
+**TOTP authenticator (shipped).** The authenticator screen is now a complete
+local implementation: RFC 6238 TOTP and RFC 4226 HOTP entries with SHA-1,
+SHA-256 and SHA-512, 6 to 8 digits, arbitrary periods, QR pairing with a
+typed-code confirmation gate before anything is armed, live codes with a text
+countdown and next-code peek, bulk management, redacted and explicit-gated
+full exports, and a password-protected append-only mutation journal. See
+[TOTP entries and pairing](totp-entries.md) for the full behaviour.

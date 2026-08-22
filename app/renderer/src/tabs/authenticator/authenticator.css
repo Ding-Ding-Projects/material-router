@@ -1,2 +1,315 @@
 /* authenticator tab styles.
-   Owned by its lane - extend freely; keep class names stable for tests. */
+   Owned by its lane - extend freely; keep class names stable for tests.
+
+   Color rule: every color below is a token from core/tokens.css. The single
+   documented exception lives in core/qr.js (the QR's fixed #000000-on-#ffffff
+   pair), which is a functional scanner-contrast data encoding, not chrome. */
+
+.mr-auth {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-3);
+  max-width: 980px;
+}
+
+.mr-auth-head {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--mr-space-2);
+  margin-bottom: var(--mr-space-1);
+}
+
+.mr-auth-head h1 { margin: 0; }
+
+.mr-auth-subtitle {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.mr-auth-vault-chip { pointer-events: none; }
+
+.mr-auth-count { color: var(--md-sys-color-on-surface-variant); }
+
+/* ---- list ---- */
+
+.mr-auth-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-1);
+}
+
+.mr-auth-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--mr-space-2);
+  padding: var(--mr-space-6) var(--mr-space-5);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.mr-auth-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--mr-space-2);
+  width: 100%;
+  padding: var(--mr-space-2) var(--mr-space-2);
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  font-size: var(--md-sys-type-title-medium-size);
+}
+
+.mr-auth-group-header:hover { background: var(--md-sys-color-surface-container-high); }
+.mr-auth-group-chevron { width: 1.2em; display: inline-block; }
+
+/* ---- row ---- */
+
+.mr-auth-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(140px, 1fr) auto auto;
+  align-items: center;
+  gap: var(--mr-space-3);
+  padding: var(--mr-space-2) var(--mr-space-3);
+  border-radius: var(--md-sys-shape-corner-md);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.mr-auth-row:hover { background: var(--md-sys-color-surface-container); }
+
+.mr-auth-row:focus-visible,
+.mr-auth-group-header:focus-visible,
+.mr-auth-journal-row:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+
+.mr-auth-row--selected {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.mr-auth-row--dragging { opacity: 0.4; }
+
+.mr-auth-row__icon {
+  font-size: 20px;
+  line-height: 1;
+  user-select: none;
+}
+
+.mr-auth-row__name { min-width: 0; overflow-wrap: anywhere; }
+.mr-auth-row__issuer { font-weight: 600; }
+.mr-auth-row__account { color: var(--md-sys-color-on-surface-variant); }
+
+.mr-auth-row__codebox {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mr-space-3);
+  justify-content: flex-end;
+}
+
+.mr-auth-code {
+  border: none;
+  background: transparent;
+  cursor: copy;
+  padding: 2px var(--mr-space-2);
+  border-radius: var(--md-sys-shape-corner-sm);
+  color: var(--md-sys-color-primary);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+  letter-spacing: 0.06em;
+}
+
+.mr-auth-code:hover { background: var(--md-sys-color-surface-container-highest); }
+.mr-auth-code:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+
+.mr-auth-timer {
+  min-width: 5.5ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-type-label-large-size);
+}
+
+.mr-auth-peek {
+  min-width: 12ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.mr-auth-badge {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  cursor: pointer;
+}
+
+.mr-auth-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--mr-space-1);
+}
+
+/* ---- bulk bar ---- */
+
+.mr-auth-bulkbar {
+  flex-wrap: wrap;
+  gap: var(--mr-space-2);
+  padding: var(--mr-space-1) 0;
+}
+
+/* ---- forms / dialogs ---- */
+
+.mr-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-3);
+}
+
+.mr-auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-1);
+  min-width: 7em;
+}
+
+.mr-auth-field > span {
+  font-size: var(--md-sys-type-label-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.mr-auth-uri-input {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: var(--md-sys-type-body-small-size);
+}
+
+.mr-auth-hint {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.mr-auth-warn { color: var(--md-sys-color-error); }
+
+.mr-auth-error {
+  margin: var(--mr-space-1) 0;
+  color: var(--md-sys-color-error);
+}
+
+/* ---- pairing view ---- */
+
+.mr-auth-qr-holder {
+  display: flex;
+  justify-content: center;
+  padding: var(--mr-space-3);
+  border-radius: var(--md-sys-shape-corner-md);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+/* The QR svg carries true dark-on-light colors itself (functional data
+   encoding, see qr.js); this container only frames it with tokens. */
+
+.mr-auth-params {
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.mr-auth-key {
+  padding: var(--mr-space-2) var(--mr-space-3);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-surface-container-highest);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+
+.mr-auth-key-lines div { line-height: 1.7; white-space: nowrap; }
+
+.mr-auth-confirm-row input { min-width: 12ch; }
+
+.mr-auth-import-report {
+  max-height: 240px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mr-auth-import-row {
+  padding: 2px var(--mr-space-2);
+  border-radius: var(--md-sys-shape-corner-xs);
+  background: var(--md-sys-color-surface-container);
+}
+
+/* ---- mutation history ---- */
+
+.mr-auth-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-3);
+  max-height: 70vh;
+}
+
+.mr-auth-retention { color: var(--md-sys-color-on-surface-variant); }
+
+.mr-auth-journal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.mr-auth-journal-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--mr-space-2);
+  padding: var(--mr-space-2);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-surface-container-low);
+  cursor: pointer;
+}
+
+.mr-auth-journal-row:hover { background: var(--md-sys-color-surface-container); }
+
+.mr-auth-journal-ts {
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-type-label-medium-size);
+  white-space: nowrap;
+}
+
+.mr-auth-journal-action { pointer-events: none; white-space: nowrap; }
+.mr-auth-journal-detail { color: var(--md-sys-color-on-surface-variant); }
+
+.mr-auth-diff {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mr-space-1);
+  padding: var(--mr-space-2) var(--mr-space-3);
+  border-left: 3px solid var(--md-sys-color-outline-variant);
+}
+
+.mr-auth-diff-line {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: var(--md-sys-type-body-small-size);
+}
+
+.mr-auth-diff:empty { display: none; }
+
+/* ---- motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mr-auth *,
+  .mr-auth *::before,
+  .mr-auth *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -70,8 +70,12 @@ Everyday utilities bundled beside the router.
 Local secrets and one-time codes.
 
 - [Vault and authenticator](authenticator/vault-and-authenticator.md) — Partially
-  shipped: the encrypted vault and lock hashing are in the main process; the TOTP
-  authenticator screen is in progress for the Authenticator lane.
+  shipped: the encrypted vault and lock hashing are in the main process; the
+  authenticator screen now ships on top of them.
+- [TOTP entries and pairing](authenticator/totp-entries.md) — Shipped: local
+  RFC 6238/RFC 4226 entries with QR pairing, typed-code confirmation, live
+  codes, bulk management, redacted/full exports and a protected mutation
+  journal.
 
 ## Docs
 
