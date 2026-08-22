@@ -15,6 +15,7 @@ import { h, writeClipboard, saveText, fmtDate } from '../../core/util.js';
 import { t, copy, addBundle } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { invoke } from '../../core/bridge.js';
+import * as settings from '../../core/settings.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 import { openModal, destructiveConfirm, showMenu } from '../../core/dialogs.js';
 import { toast } from '../../core/toasts.js';
@@ -98,6 +99,10 @@ function render(container) {
     label: copy('auth.searchPlaceholder'),
     onQuery: (qs) => { state.query = qs; renderList(); },
   });
+  // Re-adopt a live query after a language rebuild so the fresh bar shows
+  // what was being searched (no-op at first mount, where state.query is null).
+  if (state.query?.text) search.set(state.query.text);
+  if (state.query?.mode === 'regex') search.setMode('regex');
 
   const bulkBar = buildBulkBar();
 
@@ -119,6 +124,35 @@ function render(container) {
   }).catch((err) => {
     listEl.append(h('p', { class: 'mr-typography-body-medium mr-auth-error' },
       `${copy('common.errorTitle')}: ${err.message}`));
+  });
+
+  ensureLanguagePass();
+}
+
+/**
+ * Live retranslate: rebuild the mounted list surface from the existing render
+ * function when the language mode changes or School mode forces English.
+ * Entry data is re-fetched through refresh(); row selection, the live search
+ * query, collapsed groups and the peek flag all survive (state carries them,
+ * selection is re-applied after render clears it). Open add/reveal/edit
+ * dialogs are separate modal surfaces and keep their current copy until
+ * reopened - noted honestly rather than rebuilt mid-interaction.
+ */
+let languageUnsub = null;
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panel = document.getElementById('mr-tab-panel-authenticator');
+    if (!panel?.isConnected) return;
+    const scroll = panel.scrollTop;
+    const selected = [...state.selected];
+    render(panel);
+    if (selected.length) {
+      state.selected = new Set(selected);
+      if (listEl) renderList();
+    }
+    panel.scrollTop = scroll;
   });
 }
 
@@ -1506,7 +1540,8 @@ function actionLabel(action) {
 // ---------------------------------------------------------------------------
 
 function registerPaletteItems(addAnchor) {
-  if (paletteReady) return;
+  // Re-registers are intentional: palette.register replaces by id, so the
+  // language-change pass calls this again to refresh localized titles.
   paletteReady = true;
   palette.register({
     id: 'auth.add',

@@ -8,6 +8,7 @@ import { h } from '../../core/util.js';
 import { t, copy } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { invoke } from '../../core/bridge.js';
+import * as settings from '../../core/settings.js';
 import { renderMarkdown } from '../../core/md.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 
@@ -17,6 +18,17 @@ const cache = {
   /** id -> content */
   bodies: new Map(),
 };
+
+/** Live retranslate bookkeeping: the open article and the search-bar API of
+ *  the mounted browser, so a language change can rebuild chrome copy and
+ *  re-open exactly where the reader was. */
+let lastArticleId = null;
+let openArticleFn = null;
+let docsSearch = null;
+let languageUnsub = null;
+/** True only during a language-rebuild render; decides auto-show synchronously
+ *  so a fresh tab mount always opens the first article like before. */
+let suppressAutoShow = false;
 
 async function loadIndex() {
   if (cache.articles.length) return cache.articles;
@@ -53,6 +65,7 @@ function render(container) {
     try {
       const content = await loadBody(id);
       currentId = id;
+      lastArticleId = id;
       reader.textContent = '';
       reader.innerHTML = renderMarkdown(content);
       for (const a of reader.querySelectorAll('a.mr-md-internal')) {
@@ -74,6 +87,10 @@ function render(container) {
     }
   }
 
+  // The language pass re-opens the reader's article through THIS closure, so
+  // it is bound here where `reader`/`listEl` are the mounted nodes.
+  openArticleFn = showArticle;
+
   function highlightList() {
     for (const a of listEl.querySelectorAll('a')) {
       a.classList.toggle('current', a.dataset.articleId === currentId);
@@ -85,6 +102,7 @@ function render(container) {
     label: copy('docs.searchPlaceholder'),
     onQuery: () => renderList(),
   });
+  docsSearch = search;
 
   const listEl = h('nav', { 'aria-label': t('tabs.docs') });
 
@@ -112,16 +130,47 @@ function render(container) {
 
   listCol.append(search.el, listEl);
 
+  // Decided synchronously: a language rebuild re-opens the reader's article
+  // through the pass instead of jumping to the top; fresh mounts auto-open.
+  const shouldAutoShow = !suppressAutoShow;
   loadIndex().then(async () => {
     renderList();
     // Preload everything once; the corpus is small by design.
     await Promise.allSettled(cache.articles.map((a) => loadBody(a.id)));
     renderList();
     const first = cache.articles[0];
-    if (first) showArticle(first.id);
+    if (first && shouldAutoShow) showArticle(first.id);
   }).catch((err) => {
     listCol.append(h('p', { style: 'color:var(--md-sys-color-error)' },
       `${copy('common.errorTitle')}: ${err.message}`));
+  });
+
+  ensureLanguagePass();
+}
+
+/**
+ * Live retranslate: article bodies are English source documents, but the
+ * browser's own copy (title, search placeholder, aria labels) is translated.
+ * The rebuild re-opens the article the reader was on and re-adopts the search
+ * query. Articles are read-only here, so no draft text is at risk.
+ */
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panel = document.getElementById('mr-tab-panel-docs');
+    if (!panel?.isConnected) return;
+    const scroll = panel.scrollTop;
+    const q = docsSearch?.get?.() ?? null;
+    const reopenId = lastArticleId;
+    panel.textContent = '';
+    suppressAutoShow = true;
+    render(panel);
+    suppressAutoShow = false;
+    if (q?.text) docsSearch.set(q.text);
+    if (reopenId && openArticleFn) openArticleFn(reopenId);
+    else if (openArticleFn && cache.articles[0]) openArticleFn(cache.articles[0].id);
+    panel.scrollTop = scroll;
   });
 }
 

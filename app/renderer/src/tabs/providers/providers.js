@@ -15,6 +15,7 @@ import { h, fmtTimestamp } from '../../core/util.js';
 import { addBundle, t, copy } from '../../core/i18n.js';
 import { registerTab, iconFromPath } from '../registry.js';
 import { invoke } from '../../core/bridge.js';
+import * as settings from '../../core/settings.js';
 import { createSearchBar, matchesQuery } from '../../core/searchbar.js';
 import { destructiveConfirm } from '../../core/dialogs.js';
 import { toast } from '../../core/toasts.js';
@@ -49,6 +50,7 @@ let testStatus = loadTestStatus();
 let searchApi = null;
 let listEl = null;
 let rulesEditor = null;
+let languageUnsub = null;
 
 function loadTestStatus() {
   try {
@@ -129,7 +131,32 @@ function render(container) {
   );
 
   refreshPaletteTitles();
+  ensureLanguagePass();
   reload();
+}
+
+/**
+ * Live retranslate: rebuild the mounted panel from the existing render
+ * function when the language mode changes or School mode forces English.
+ * Provider data lives in the main stores, so the rebuild re-fetches through
+ * the same reload() path; the search query is re-adopted into the fresh bar.
+ * No free-text drafts live on this surface (the add/edit dialog is a separate
+ * modal that keeps its own text until closed).
+ */
+function ensureLanguagePass() {
+  if (languageUnsub) return;
+  languageUnsub = settings.onChange((key) => {
+    if (key !== 'general.languageMode' && key !== 'school.active') return;
+    const panel = document.getElementById('mr-tab-panel-providers');
+    if (!panel?.isConnected) return;
+    const scroll = panel.scrollTop;
+    const q = searchApi?.get?.() ?? null;
+    panel.textContent = '';
+    render(panel);
+    if (q?.text) searchApi.set(q.text);
+    if (q?.mode === 'regex') searchApi.setMode('regex');
+    panel.scrollTop = scroll;
+  });
 }
 
 async function reload() {

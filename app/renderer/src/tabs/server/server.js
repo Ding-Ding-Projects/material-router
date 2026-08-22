@@ -959,10 +959,12 @@ function render(container) {
   }
 
   // Re-render labels when the language mode changes (foundation caches i18n).
+  // School mode forcing English presentation re-applies through the same pass.
   // State survives the rebuild; the fresh search bar re-adopts the live query.
   if (!languageUnsub) {
     languageUnsub = settings.onChange((key) => {
-      if (key !== 'general.languageMode') return;
+      if (key !== 'general.languageMode' && key !== 'school.active') return;
+      registerServerPaletteItems();
       const root = els.root;
       if (!root?.isConnected) return;
       const q = state.query;
@@ -999,8 +1001,11 @@ registerTab({
 // -- command palette coverage ---------------------------------------------------
 // Guarded so the module stays importable in non-DOM environments (palette
 // internals touch HTMLElement); behavior in the renderer is unchanged.
+// Wrapped so the language-change pass can re-register localized titles
+// (palette.register replaces entries by id).
 
-if (typeof HTMLElement !== 'undefined') {
+function registerServerPaletteItems() {
+  if (typeof HTMLElement === 'undefined') return;
   palette.register({
     id: 'serverlane.start',
     title: t('server.paletteStart'),
@@ -1048,3 +1053,5 @@ if (typeof HTMLElement !== 'undefined') {
     run: () => clearLogs(),
   });
 }
+
+registerServerPaletteItems();
