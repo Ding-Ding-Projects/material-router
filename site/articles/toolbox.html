@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toolbox · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="Toolbox">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/toolbox.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="toolbox">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>Toolbox <span class="bi-secondary" data-lang-zh>工具箱</span></h1>
+<p class="page-lead">Notifications that never interrupt, a reviewable centre, and a history journal that answers “what happened while I was away”.</p>
+<p class="page-lead bi-secondary" data-lang-zh>永不打斷你嘅通知、可以翻舊帳嘅中心、仲有回答「我不在嗰陣發生咗乜」嘅歷史日誌。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
+  
+<p>Toasts anchor bottom-right, stack without overlapping, auto-dismiss on a sensible timeout, and never steal focus. Errors and warnings persist until dismissed so they cannot scroll away unnoticed. The notification centre keeps dismissed items findable, searchable by plain text or regex, bulk-dismissible, and exportable to a portable file. The history journal records notable events — requests served, configuration changes, errors — filterable by date and action type.</p>
+<p class="bi-secondary" data-lang-zh>Toast固定喺右下角、堆疊唔重疊、合理時限自動消失、永不搶焦點。錯誤同警告會留到你親手閂，唔會悄悄滾走。通知中心令已閂嘅項目都搵得返，可以用純文字或正則搜尋、大量處理、匯出成通用檔案。歷史日誌記低重要事件 —— 已服務請求、配置變更、錯誤 —— 可按日期同動作篩選。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
+  
+<p>Neither feature needs setup. Data lives locally with the rest of the app&rsquo;s state; export writes whatever the current view holds, honouring active search and filters.</p>
+<p class="bi-secondary" data-lang-zh>兩樣都唔使設定。資料同app其餘狀態一齊存本地；匯出寫低目前視圖所見，尊重現正生效嘅搜尋同篩選。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
+  
+<ul>
+<li>Rapid notifications stack rather than overlapping or dropping silently.</li>
+<li>Dismissed errors stay recoverable in the centre.</li>
+<li>A failed export reports failure rather than writing a truncated file quietly.</li>
+<li>Journal filters compose: date range narrows together with action type.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>密集通知會堆疊，唔會重叠亦唔會默默跌落地；閂咗嘅錯誤喺中心搵得返；匯出失敗會如實報告，唔會靜靜寫半個檔；日誌篩選可以疊加：日期範圍同動作類型一齊收窄。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
+  
+<p>Notifications and journal entries are redacted: keys, bearer tokens and raw bodies never appear. Exports carry the same redaction. All data stays on the machine; neither feature makes network requests.</p>
+<p class="bi-secondary" data-lang-zh>通知同日誌一律遮蔽：金鑰、token、原始body永不現身；匯出同樣遮蔽。所有資料留喺本機，兩個功能都唔會發網絡請求。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
+  
+<p>Serve a success and watch the toast appear bottom-right and auto-dismiss; trigger a failure and confirm it persists; search the centre with text and regex, bulk-dismiss a selection, export the view; filter the journal by date and action and confirm results narrow.</p>
+<p class="bi-secondary" data-lang-zh>觸發一次成功，看toast右下角出現並自動消失；觸發失敗，確認佢留低；喺中心用文字同正則搜尋、大量閂選區、匯出視圖；按日期同動作篩日誌，確認結果收窄。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="appearance.html">Appearance · 外觀</a> <a href="modes.html">Modes · 語言模式</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>

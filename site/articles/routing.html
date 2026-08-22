@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Routing · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="Routing">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/routing.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="routing">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>Routing <span class="bi-secondary" data-lang-zh>路由與格式翻譯</span></h1>
+<p class="page-lead">The router accepts OpenAI and Anthropic wire formats on loopback endpoints and translates between them automatically — requests, responses and streaming chunks.</p>
+<p class="page-lead bi-secondary" data-lang-zh>路由器喺本地端點同時收OpenAI同Anthropic兩種wire format，並且自動雙向翻譯 —— 請求、回應、串流chunks全部搞掂。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
+  
+<p>The server listens on <code>127.0.0.1</code>, port <code>8787</code> by default, and serves four routes:</p>
+<table><tr><th>Route</th><th>Purpose</th></tr>
+<tr><td><code>POST /v1/chat/completions</code></td><td>OpenAI Chat Completions format</td></tr>
+<tr><td><code>POST /v1/messages</code></td><td>Anthropic Messages format</td></tr>
+<tr><td><code>GET /v1/models</code></td><td>Model identifiers across configured providers</td></tr>
+<tr><td><code>GET /health</code></td><td>Liveness check</td></tr></table>
+<p>Translation is automatic per request: system prompts move into the Anthropic <code>system</code> field and back, tool calls map to <code>tool_use</code>/<code>tool_result</code> blocks, base64 images map to <code>image_url</code> parts, stop arrays translate both ways, and usage tokens recompute. Streaming converts Anthropic&rsquo;s event sequence to OpenAI <code>chat.completion.chunk</code> deltas and the reverse. When an OpenAI-shaped request omits <code>max_tokens</code> but the destination requires it, the translator fills in <code>4096</code> and writes a note to the redacted log so the substitution is visible.</p>
+<p class="bi-secondary" data-lang-zh>翻譯係逐請求自動做：system prompt 會搬去 Anthropic 嘅 <code>system</code> 欄位再搬返、工具調用映射做 <code>tool_use</code>/<code>tool_result</code> block、base64 圖片映射做 <code>image_url</code> part、stop 陣列雙向翻譯、用量token會重算。串流方面，Anthropic 事件序列會轉成 OpenAI chunk，反方向亦然。若OpenAI格式嘅請求漏咗 <code>max_tokens</code> 而目的地需要，翻譯器會補 <code>4096</code> 並喺已遮蔽嘅日誌度寫低一筆，等你知道有呢回事。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
+  
+<p>Host and port live in app settings and apply when the listener restarts; CORS and bearer-token authentication are independent toggles. The 10&nbsp;MB body limit and the 120-second upstream deadline are fixed values in v0.1.0. Translation itself has no switches to misconfigure.</p>
+<p class="bi-secondary" data-lang-zh>主機同埠喺app設定入面，重啟listener之後生效；CORS同bearer-token認證係獨立開關。10&nbsp;MB請求上限同120秒上游死線喺v0.1.0係固定值。翻譯本身冇任何掣可以整錯。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
+  
+<ul>
+<li>Body over 10 MB → HTTP 413. Malformed JSON → HTTP 400 with a descriptive message.</li>
+<li>No routing rule matches the requested model → an explanatory error naming the model.</li>
+<li>Upstream unreachable or slower than the deadline → the request aborts at 120 s and the client gets an error instead of a hang.</li>
+<li>Client disconnects early → the in-flight upstream request is aborted promptly.</li>
+<li>Unrecognised finish/stop reasons pass through best-effort rather than crashing the stream.</li>
+<li>Very long outputs can truncate earlier than expected because of the <code>max_tokens</code> default; the log note says when this happened.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>超過10&nbsp;MB → HTTP&nbsp;413；JSON唔合法 → HTTP&nbsp;400連說明；無規則配對到model → 錯誤訊息會寫明邊個model；上游死線一到（120秒）就中止並回錯誤俾client；client早走，上游請求即刻中止；唔識得嘅finish原因會盡力帶過而唔會整爛個stream；因為 <code>max_tokens</code> 有預設值，超長輸出可能提早截斷，日誌會註明。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
+  
+<ul>
+<li>Loopback-only by default; changing the bind host exposes the proxy to your network, and bearer-token auth should be enabled if you do.</li>
+<li>Credentials are resolved from the encrypted vault at request time and never appear in URLs, client-facing headers or log entries.</li>
+<li>Logs are redacted before storage and capped at 2,000 entries, so they cannot grow without bound.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>預設只綁loopback；改咗綁址就要開bearer-token認證。金鑰喺請求時由加密保險庫解析，唔會出現喺URL、回傳header或者日誌。日誌儲存前先遮蔽，上限2000條，唔會無限長大。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
+  
+<pre><code>curl http://127.0.0.1:8787/health
+curl http://127.0.0.1:8787/v1/models</code></pre>
+<p>Then send one completion through each endpoint with <code>"stream": true</code> and confirm chunks arrive incrementally; route the same conversation across formats and confirm the reply parses on the other side; send an oversized body and confirm HTTP 413.</p>
+<p class="bi-secondary" data-lang-zh>跟住用兩個端點各發一個 <code>"stream": true</code> 嘅completion，確認chunks逐步送到；將同一條conversation跨格式發送，確認另一邊解析正常；發個超大body確認HTTP&nbsp;413。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="providers.html">Providers & keys · 供應商與金鑰</a> <a href="builder.html">API builder · API產生器</a> <a href="platform.html">Platform · 平台</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>

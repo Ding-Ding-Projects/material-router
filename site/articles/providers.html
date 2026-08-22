@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Providers & keys · Material Router</title>
+<meta name="description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:title" content="Providers & keys">
+<meta property="og:description" content="Feature documentation: behaviour, configuration, failure modes, security considerations and verification.">
+<meta property="og:url" content="https://ding-ding-projects.github.io/material-router/articles/providers.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Material Router">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Material Router — your keys, your models, one local endpoint">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/social-preview.png">
+<meta name="theme-color" content="#6750a4">
+<link rel="icon" href="https://raw.githubusercontent.com/Ding-Ding-Projects/material-router/main/build/icons/icon.png">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="providers">
+<a class="skip-link" data-i18n="site.skip" href="#main">Skip to content</a>
+<div id="tabstrip-root"></div>
+<header class="site-header">
+  <div class="site-brand">
+    <a href="../index.html">Material Router</a>
+    <span class="site-tagline" data-i18n="site.tagline">Your keys, your models, one local endpoint</span>
+  </div>
+  <div id="header-actions">
+    <button type="button" class="mr-btn mr-btn--tonal" id="palette-open" aria-label="Open command palette (Ctrl+Shift+F)" data-i18n-attr="aria-label" data-i18n-key="pl.open">Ctrl+Shift+F</button>
+  </div>
+</header>
+<p class="documents-note" data-i18n="site.documents">This site documents Material Router. The app itself is not hosted here &mdash; installers live on the GitHub releases page.</p>
+<main class="page" id="main">
+
+<h1>Providers & keys <span class="bi-secondary" data-lang-zh>供應商與金鑰</span></h1>
+<p class="page-lead">Bring-your-own-key configuration: provider records, OS-encrypted key storage, and priority-ordered routing rules.</p>
+<p class="page-lead bi-secondary" data-lang-zh>自帶金鑰嘅配置：供應商紀錄、作業系統級加密金鑰儲存、有優先次序嘅路由規則。</p>
+<article class="article-body">
+
+<section id="behaviour" aria-labelledby="behaviour-h">
+  <h2 id="behaviour-h">Behaviour <span class="bi-secondary" data-lang-zh>行為</span></h2>
+  
+<p>A provider records a display name, a base URL, a reference to a stored key (<code>keyRef</code>), and the models it serves. Routing rules match the requested model name:</p>
+<table><tr><th>Matcher</th><th>Meaning</th></tr>
+<tr><td>Exact</td><td>One specific model name</td></tr>
+<tr><td>Prefix</td><td>Any name starting with the text</td></tr>
+<tr><td>Catch-all</td><td>Anything — the usual final fallback</td></tr></table>
+<p>Rules evaluate in priority order and the first match wins, so specific rules belong above broad ones. Keys are stored once in the vault (Electron <code>safeStorage</code>, DPAPI-backed on Windows) and records hold only the opaque reference; at request time the main process resolves it, attaches the credential, discards it.</p>
+<p class="bi-secondary" data-lang-zh>供應商紀錄有名稱、base URL、金鑰參考（<code>keyRef</code>）同佢serve嘅model。規則按優先次序配對請求嘅model名，第一條中就贏，所以精確規則要放喺闊規則前面。金鑰一次性存入保險庫（Electron <code>safeStorage</code>，Windows上DPAPI），紀錄只持有一個不透明參考；請求時主程序解析、附加、丟棄。</p>
+</section>
+
+<section id="configuration" aria-labelledby="configuration-h">
+  <h2 id="configuration-h">Configuration <span class="bi-secondary" data-lang-zh>設定</span></h2>
+  
+<p>Provider and rule records are created, updated and deleted through the main-process configuration stores. The dedicated management tab is being built by the Providers lane; until it lands, configuration changes go through the underlying stores rather than a settings screen.</p>
+<p class="bi-secondary" data-lang-zh>供應商同規則紀錄經主程序配置store增刪改。專責嘅管理分頁正由Providers lane興建建緊；佢未落地之前，配置變更要行底層store而唔係設定畫面。</p>
+</section>
+
+<section id="failure-modes" aria-labelledby="failure-modes-h">
+  <h2 id="failure-modes-h">Failure modes <span class="bi-secondary" data-lang-zh>失敗模式</span></h2>
+  
+<ul>
+<li>Dangling key reference → explicit credential error, never a silently omitted header.</li>
+<li>No matching rule → rejection naming the unmatched model.</li>
+<li>Overlapping rules → only the highest-priority match fires; the lower one is inert.</li>
+<li>Wrong base URL → gateway error after the request deadline.</li>
+</ul>
+<p class="bi-secondary" data-lang-zh>金鑰參考懸空 → 明確嘅憑證錯誤，唔會靜靜雞唔加header；無規則配對 → 錯誤寫明邊個model；規則重疊 → 只有最高優先嗰條生效；base URL錯 → 死線之後回gateway錯誤。</p>
+</section>
+
+<section id="security" aria-labelledby="security-h">
+  <h2 id="security-h">Security <span class="bi-secondary" data-lang-zh>安全考量</span></h2>
+  
+<p>Keys are encrypted at the OS level and referenced indirectly, so a leaked configuration export carries identifiers, never secrets. Log entries record that a credential was attached, not the credential. Removing a provider removes its reference; orphaned vault entries can be cleaned without exposing contents.</p>
+<p class="bi-secondary" data-lang-zh>金鑰喺作業系統層加密而且間接引用，就算配置匯出外洩都只有識別碼、冇秘密。日誌只記「曾附加憑證」，唔記內容。刪除供應商會移除其參考；孤兒保險庫條目可以清理而唔會暴露內容。</p>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <h2 id="verification-h">Verification <span class="bi-secondary" data-lang-zh>驗證方法</span></h2>
+  
+<p>Store a key and inspect the persisted record: it should contain a <code>keyRef</code> and no readable material. Define exact, prefix and catch-all rules, then send model names that distinguish them and confirm priority decides. Delete a rule and confirm its dependents report the unmatched-model error.</p>
+<p class="bi-secondary" data-lang-zh>存一把金鑰再檢查紀錄：應該見到 <code>keyRef</code> 而且冇可讀材料。整精確、前綴、catch-all三條規則，發送能分辨三者嘅model名確認優先次序作準；刪掉一條規則，確認依賴佢嘅請求回報unmatched-model錯誤。</p>
+</section>
+<nav class="suggested" aria-label="Suggested next articles">
+  <h2>Suggested next articles · 建議下一篇</h2>
+  <ul><li><a href="routing.html">Routing · 路由</a> <a href="authenticator.html">Vault & authenticator · 保險庫與驗證器</a></li></ul>
+</nav>
+</article>
+</main>
+<footer class="site-footer">
+  <nav aria-label="Footer">
+    <a href="../index.html">Home</a>
+    <a href="../docs.html">Docs</a>
+    <a href="../changelog.html">Changelog</a>
+    <a href="../settings.html">Settings</a>
+    <a href="../about.html">About</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router" rel="noopener noreferrer" target="_blank">GitHub</a>
+    <a href="https://github.com/Ding-Ding-Projects/material-router/releases" rel="noopener noreferrer" target="_blank">Releases</a>
+  </nav>
+  <p>&copy; <span id="footer-year">2026</span> Ding-Ding-Projects contributors &middot; MIT &middot; Documentation site, static and dependency-free.</p>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>
