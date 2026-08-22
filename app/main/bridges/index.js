@@ -12,7 +12,7 @@
 // which keeps parallel feature branches merge-conflict-free.
 
 import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const SELF = path.dirname(fileURLToPath(import.meta.url));
@@ -27,7 +27,9 @@ export async function loadLaneBridges(ctx) {
     .filter((f) => f.endsWith('.js') && f !== 'index.js')
     .sort();
   for (const file of files) {
-    const mod = await import(path.join(SELF, file));
+    // Windows absolute paths are not valid ESM specifiers ('C:\...' reads as
+    // scheme "c:"); convert through a file:// URL first.
+    const mod = await import(pathToFileURL(path.join(SELF, file)).href);
     if (typeof mod.register !== 'function') {
       throw new Error(`lane bridge ${file} must export register(ctx)`);
     }
