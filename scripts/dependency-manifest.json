@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "description": "Pinned, digest-verified toolchain and dependency sources for Material Router. download-dependencies.bat reads this file; nothing is downloaded from a URL that is not recorded here. Project npm dependencies are pinned by package-lock.json (npm ci verifies every package against the lockfile integrity hash), so they are listed here for audit only and are not separately fetched by the bat scripts.",
+  "toolchain": {
+    "node": {
+      "purpose": "JavaScript runtime needed to run npm and the build scripts.",
+      "version": "v22.14.0",
+      "winget": {
+        "packageId": "OpenJS.NodeJS.LTS",
+        "scope": "user",
+        "digestNote": "winget installs from the MS Store/CDN and does not expose a stable archive digest; the portable zip below is the digest-verified fallback and the authoritative pinned artifact."
+      },
+      "portable": {
+        "url": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip",
+        "sha256": "55b639295920b219bb2acbcfa00f90393a2789095b7323f79475c9f34795f217",
+        "archiveRootDir": "node-v22.14.0-win-x64",
+        "installDir": "%LOCALAPPDATA%\\material-router-toolchain\\node"
+      }
+    }
+  },
+  "projectDependencies": {
+    "pinnedBy": "package-lock.json (npm ci)",
+    "verifyNote": "npm ci refuses to install when a registry tarball does not match the lockfile integrity hash. Versions below are informational copies of the resolved lockfile state at authoring time.",
+    "resolved": [
+      { "name": "electron", "version": "33.4.11", "tarball": "https://registry.npmjs.org/electron/-/electron-33.4.11.tgz" },
+      { "name": "electron-builder", "version": "25.1.8", "tarball": "https://registry.npmjs.org/electron-builder/-/electron-builder-25.1.8.tgz" },
+      { "name": "electron-builder-squirrel-windows", "version": "25.1.8", "tarball": "https://registry.npmjs.org/electron-builder-squirrel-windows/-/electron-builder-squirrel-windows-25.1.8.tgz" }
+    ]
+  },
+  "policy": [
+    "Never install code-signing certificates or signing material of any kind.",
+    "Never install machine-wide when a user-scoped path exists.",
+    "A digest mismatch fails closed: the download is deleted and the script exits non-zero."
+  ]
+}
