@@ -52,7 +52,7 @@ service, no telemetry: your API keys never leave your machine.
 - 🔐 **Built-in authenticator** - TOTP entries with QR pairing *(Authenticator lane)*
 - 🧰 **Toolbox** - local file converter *(Utility lane)*
 - 📖 **Offline docs browser** - bundled articles, internal links, regex-capable search
-- 🔄 **Auto-updates** - Squirrel.Windows over HTTPS *(Plumbing lane)*
+- 🔄 **Auto-updates** - background checks every six hours, staged installs behind a ready banner, unsigned feed disclosed everywhere
 
 </details>
 
@@ -106,20 +106,63 @@ npm start          # run the app
 npm run dist       # build the Squirrel installer into dist/squirrel-windows/
 npm run icons      # regenerate brand assets (deterministic, zero-dep)
 npm run docs-index # rebuild docs/articles/index.json for the in-app browser
-npm run count      # print the committed line-count table
+npm run count      # print the line-count table (-- --markdown for the notes-ready form)
 ```
 
 | Script | Purpose |
 | --- | --- |
-| `build.bat` | fresh machine → running app, installing everything itself |
-| `build-installer.bat` | same, but produces the release-shaped unsigned `Setup.exe` |
-| `download-dependencies.bat` | toolchain + project deps only |
+| `build.bat` | fresh machine → running app, installing everything itself (`/s`, `--silent` or `SILENT=1` for unattended) |
+| `build-installer.bat` | same bootstrap, then verifies the release-shaped unsigned `Setup.exe`, `RELEASES`, `.nupkg` and prints their SHA-256 - never tags, pushes, or publishes |
+| `download-dependencies.bat` | pinned toolchain + project deps only, digest-verified against [`scripts/dependency-manifest.json`](scripts/dependency-manifest.json) before anything extracts |
 
-Line counts (source of truth: `npm run count`; refreshed by CI on each release):
+Every phase of every script reports what it found, what it installed, where,
+and how long it took. A downloaded toolchain binary whose SHA-256 disagrees
+with the manifest is deleted and the script stops - nothing unverified is
+ever extracted.
+
+### Releases
+
+Every push to `main` (and every manual dispatch) publishes one uniquely
+tagged, non-draft GitHub Release built by
+[`.github/workflows/release.yml`](.github/workflows/release.yml): unsigned
+Squirrel installer plus `RELEASES`, full and delta `.nupkg`,
+`SHA256SUMS.txt`, a dim-sum photo resolved from the public catalog, a
+line-count table with agent/human attribution, workflow timing evidence,
+and an explicit statement that no test or lint gates ran - standing project
+policy. Tags are monotonic and never recycled; a collision fails loudly.
+Details: [packaging docs](docs/features/platform/packaging-updates.md).
+
+Verify a published release from any checkout:
+
+```bat
+node scripts/verify-release-assets.mjs --tag v0.2.0 --sha <commit-sha>
+```
+
+Exits non-zero unless the release exists, is non-draft, carries every
+expected asset non-empty with download URLs, and its tag resolves to exactly
+that commit.
+
+### Auto-updates
+
+The installed app checks GitHub releases on startup and every six hours,
+stages the newer installer in the background, and shows a persistent
+non-blocking ready banner - **Restart to install** runs your unsaved-work
+guards before quitting into the Squirrel update; **Later** snoozes that
+version. The feed is unsigned and every surface offering it says so. One
+import wires the surface into the shell:
+`import './core/updater-banner.js';` in `app/renderer/src/app.js`.
+Details: [auto-update docs](docs/features/platform/auto-update.md).
+
+### Line counts
+
+Source of truth: `npm run count`; refreshed by CI into every release's
+notes. Attribution counts surviving lines by git blame - agent lines are
+those whose introducing commit carries the `Co-Authored-By: Claude Fable 5`
+trailer or whose author is the automation identity:
 
 <!-- COUNTS:START -->
-<!-- refreshed by CI - see the latest release notes for the authoritative table -->
-<!-- TIME-ESTIMATE: refreshed by CI alongside counts -->
+<!-- refreshed by CI on each release; table below captured at lane tip -->
+<!-- TIME-ESTIMATE: see the estimate method beside the table in the release notes -->
 <!-- COUNTS:END -->
 
 ## 📚 Documentation
