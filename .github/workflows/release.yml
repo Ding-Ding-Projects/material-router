@@ -9,9 +9,12 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
   workflow_dispatch:
+# No `tags:` push trigger, ever: this workflow creates the v-tag itself as a
+# side effect of publishing, and listening for it re-triggers the workflow on
+# every release - an endless self-publishing loop (observed live: 88 runaway
+# releases in one hour before the trigger was removed). Releases are cut by
+# main pushes and manual dispatch only.
 
 # Release publishing is not idempotent: never cancel an in-flight run. The
 # group is scoped per ref so simultaneous releases on different refs cannot
