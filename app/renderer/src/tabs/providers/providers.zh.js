@@ -1,0 +1,138 @@
+// Purpose: Traditional Chinese (Hong Kong colloquial) strings for the
+// Providers & Keys tab (ns 'providers'). Carries forward the two foundation
+// placeholder keys verbatim.
+// Owned by Providers lane.
+
+export const zh = {
+  // carried forward from the foundation placeholder bundle
+  'countProviders': '個供應商',
+  'countRules': '條路由規則',
+
+  // tab
+  'subtitle': '接通你已經有帳戶嘅 AI 供應商，API 金鑰收喺加密保險庫入面，再幫每個 model 安排去邊度。',
+  'searchPlaceholder': '篩選供應商…',
+  'addProvider': '新增供應商',
+  'loadFailed': '載入唔到供應商資料。',
+  'retry': '再試一次',
+  'emptyTitle': '仲未有任何供應商',
+  'emptyBody': '加第一個供應商，就可以開始分流請求。',
+  'noMatch': '冇供應商符合呢個篩選條件。',
+
+  // type badges
+  'type.openai': 'OpenAI',
+  'type.anthropic': 'Anthropic',
+  'type.compatible': 'OpenAI 相容',
+
+  // card
+  'enabledLabel': '啟用',
+  'enabledAria': '{name} 已啟用',
+  'status.untested': '未測試過',
+  'status.testing': '測試中…',
+  'status.okAt': '連線正常 · {time}',
+  'status.failAt': '連線失敗 · {time}',
+  'noBaseUrl': '未有 base URL',
+  'defaultModelLine': '預設 model：{model}',
+  'noDefaultModel': '未設預設 model',
+  'keyStoredLine': 'API 金鑰已存放，編號',
+  'keyMissingLine': '未存放 API 金鑰',
+  'action.test': '測試',
+  'action.edit': '編輯',
+  'action.delete': '刪除',
+
+  // delete confirmation
+  'deleteTitle': '刪除供應商「{name}」？',
+  'deleteBody': '會永久移除 {name} 嘅供應商紀錄。',
+  'deleteBodyKeyRef': '佢存放咗嘅 API 金鑰（保險庫編號 {id}）會一併刪除。',
+  'deleteBodyNoKey': '佢冇存放任何 API 金鑰。',
+  'deleteBodyRules': '指向佢嘅路由規則都會一齊移除。',
+
+  // toasts
+  'toast.addedTitle': '已新增供應商',
+  'toast.savedTitle': '供應商已儲存',
+  'toast.savedBody': '{name} 已經係最新狀態。',
+  'toast.deletedTitle': '供應商已刪除',
+  'toast.testOkTitle': '連線成功',
+  'toast.testOkBody': '去到端點，攞到 {count} 個 model。',
+  'toast.testFailTitle': '連線測試失敗',
+  'toast.saveFailedTitle': '供應商儲存唔到',
+  'toast.testAllSummary': '{total} 個已啟用供應商之中，{ok} 個回應成功。',
+
+  // warnings
+  'warn.obfuscatedTitle': '未經作業系統加密下存放',
+  'warn.obfuscatedBody': '今次工作階段用唔到作業系統層級加密，金鑰改為以較弱嘅本體混淆方式存放。',
+  'warn.orphanKeyTitle': '保險庫項目未能移除',
+  'warn.orphanKeyBody': '保險庫編號 {id} 仍然存放緊，遲下請手動清除。（{msg}）',
+
+  // errors
+  'err.deadline': '等極都未等到 app 回應，要求已經超時。',
+
+  // palette
+  'palette.add': '新增供應商',
+  'palette.testAll': '測試所有已啟用供應商',
+
+  // add/edit form
+  'form.titleAdd': '新增供應商',
+  'form.titleEdit': '編輯供應商',
+  'form.name': '名稱',
+  'form.nameHelper': '淨係你自己睇嘅標籤，例如「公司 OpenAI」。',
+  'form.errNameRequired': '幫呢個供應商改個名，方便認返佢。',
+  'form.type': '類型',
+  'form.baseUrl': 'Base URL',
+  'form.urlHelper': '一定要以 https:// 開頭 —— 只有 localhost 地址先可以用 http://。',
+  'form.errUrlRequired': '輸入 base URL，例如 https://api.openai.com/v1',
+  'form.errUrlFormat': 'Base URL 一定要以 https:// 開頭（只有 localhost 先可以用 http://）。',
+  'form.restoreDefault': '還原預設 URL',
+  'form.restoreDefaultTip': '擺返呢個類型嘅標準 base URL。',
+  'form.alreadyDefault': '已經係預設 URL。',
+  'form.keyStored': 'API 金鑰已存放',
+  'form.keyReplace': '換新金鑰',
+  'form.keyRemove': '移除金鑰',
+  'form.keyUndoRemove': '照舊保留金鑰',
+  'form.keyPendingRemoval': '儲存嗰陣就會刪除已存放嘅金鑰。',
+  'form.keyRemoveConfirmTitle': '移除已存放嘅 API 金鑰？',
+  'form.keyRemoveConfirmBody': '儲存嗰陣會刪除保險庫編號 {id} 嘅憑證。之後除非輸入新金鑰，否則請求會喺無認證之下送出。',
+  'form.apiKey': 'API 金鑰',
+  'form.apiKeyPlaceholder': '貼上 API 金鑰',
+  'form.showKey': '顯示',
+  'form.hideKey': '隱藏',
+  'form.keyHelper': '金鑰會加密存放喺作業系統保險庫；供應商只保留一個編號引用。',
+  'form.keyReplaceHelper': '貼上新金鑰，就會喺同一個保險庫編號之下取代舊金鑰。',
+  'form.defaultModel': '預設 model',
+  'form.modelHelper': '建議來自上次成功嘅連線測試。',
+  'form.modelHelperEmpty': '可以留空。做一次連線測試，呢度就會列出可用 model。',
+  'form.enabled': '啟用',
+  'form.save': '儲存供應商',
+  'form.saving': '儲存中…',
+
+  // routing rules
+  'rules.title': '路由規則',
+  'rules.note': '規則由上至下套用，第一個符合就作實，所以具體嘅規則要放喺寬鬆嘅前面。同分嘅話按明確度定先後（exact 勝 prefix、prefix 勝 catch-all），再唔夠就用位置分。完全無規則符合嘅請求，會退返去第一個有預設 model 而又啟用咗嘅供應商；一個都冇嘅話就會被拒絕。',
+  'rules.empty': '仲未有規則。請求會直接交畀第一個有預設 model 而又啟用咗嘅供應商。',
+  'rules.add': '新增規則',
+  'rules.addNeedsProvider': '先加一個供應商 —— 規則要有目的地先派到手。',
+  'rules.rowLabel': '規則 {n}',
+  'rules.fallbackBadge': '後備',
+  'rules.matchType': '配對方式',
+  'rules.matchPrefix': '前綴',
+  'rules.matchExact': '完全一致',
+  'rules.matchCatchall': '全部接收',
+  'rules.pattern': 'Model 配對字串',
+  'rules.patternPlaceholder': '例如 gpt-4o 或者 claude-',
+  'rules.chipsLabel': '常用 model 前綴',
+  'rules.chipTip': '用呢個前綴取代現時配對字串',
+  'rules.catchallNote': '全部接收會包起所有 model，所以唔使填配對字串。',
+  'rules.target': '送去邊個供應商',
+  'rules.targetPlaceholder': '揀一個供應商…',
+  'rules.targetRemoved': '呢個供應商已經唔存在，請重新揀過',
+  'rules.errPattern': '輸入要配對嘅 model 字串，例如 gpt-4o。',
+  'rules.errTarget': '揀邊個供應商處理呢條規則。',
+  'rules.errTargetNone': '先加一個供應商。',
+  'rules.enabled': '啟用規則',
+  'rules.moveUp': '將規則向上搬（優先度更高）',
+  'rules.moveDown': '將規則向下搬（優先度更低）',
+  'rules.cannotMoveUp': '已經係最頂。',
+  'rules.cannotMoveDown': '已經係最底。',
+  'rules.revert': '還原修改',
+  'rules.deleteTitle': '刪除呢條路由規則？',
+  'rules.deleteBody': '規則「{rule}」（送往 {provider}）會即刻失效。',
+};
