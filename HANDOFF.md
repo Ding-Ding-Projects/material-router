@@ -1,5 +1,38 @@
 # Handoff - Material Router
 
+## 2026-09-18 repository closeout
+
+The primary checkout is `main` at `4850a71f59654afe587fd4ae42352a39e58056d8`, and it
+matches `origin/main` at this point in the closeout. The 13 linked feature branches named
+in the closeout inventory are already integrated into `main` through ordinary two-parent
+merge commits. No branch had uncommitted files, staged files, untracked files, conflict
+index entries, or stash entries when inspected.
+
+Preservation refs were verified with `git ls-remote` before cleanup. The preserved branch
+heads are:
+
+| Branch | Verified tip |
+| --- | --- |
+| `feat/readme-captures` | `b0c1fae0909aa2a2def7a6b9ef0b98864971d9bc` |
+| `feat/readme-captures-2` | `768a02bbf826c9b05b405c428bbcc7ece704ed28` |
+| `feat/fix-minors-toolbox` | `1431f5e5c06dcf083bbaa93d8a8e88f3460f0651` |
+| `feat/fix-minors-ui` | `1368d7751b572a5be75136ffc31d4d15c9643dd3` |
+| `feat/gap-close` | `4e1310f7492682bd83121fa877e8ea62136839d4` |
+| `feat/lang-live-panels` | `01bd5a5e4ea15ce4e440757012ad94f8ac80a31f` |
+| `feat/local-tests` | `c3636b9efb3411e2bd0ad17227cdd98736fcddbc` |
+| `feat/releases-bom` | `22d222085cc98cb0524cc80b8f60220ace472804` |
+| `feat/smoke-fix-0` | `7da4fcb49a630616abffb69ce9598ffafb7378ee` |
+| `feat/smoke-fix-1` | `6a0a5eb1d86cf2c9a69bf6d2719afae6be3f9837` |
+| `feat/smoke-fix-2` | `a3c8a5a0b68af3b3aa46f06f2c74b12d49cc16db` |
+| `feat/smoke-fix-3` | `c6c5a008e5c5a388c27246bbac8e090ad7be88f4` |
+| `feat/tabs-destroy` | `c6f081e3863803a843fbdd84bf014a7ad141bd75` |
+
+Each preservation tip is an ancestor of the final `main` tip. The linked checkout paths
+are task-owned closeout candidates because they were explicitly placed in scope together.
+No separate user-owned, active, load-bearing, unmerged, unpublished, or ownership-uncertain
+work was found in the named set. The external archive path and verification receipt will
+be added below before any linked checkout or branch is removed.
+
 State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
 clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
 authenticator offline article joined `docs/articles/` with its manifest regenerated,
