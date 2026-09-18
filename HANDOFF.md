@@ -2,8 +2,8 @@
 
 ## 2026-09-18 repository closeout refresh
 
-The primary checkout is `C:\Users\cntow\Documents\GitHub\material-router` on `main` at
-`a667952d507633031b2f860efbea3f03bdafbbe9`, and it matches `origin/main`. A fresh
+The primary checkout is `C:\Users\cntow\Documents\GitHub\material-router` on `main`, and
+it matches `origin/main` at the verified ref recorded in the terminal closeout report. A fresh
 read-only process check found no running Git process, no lock file, and no linked checkout
 admin metadata. The current inventory contains one checkout, one local branch, one remote
 head, the historical tags listed by `git show-ref`, no stash entries, no conflict index
@@ -61,10 +61,11 @@ Fresh archive receipt for this refresh:
 Cleanup result from the earlier closeout: all 13 named linked checkout directories and
 their local and remote feature branches were removed after the proofs above. The current
 refresh found no removable candidate. The only remaining checkout and branch are the
-primary `main` checkout and the remote `origin/main`, both at `a667952`.
+primary `main` checkout and the remote `origin/main`, both at the verified ref recorded in
+the terminal closeout report.
 
-The final closeout refresh commit is `a667952d507633031b2f860efbea3f03bdafbbe9`, and
-its remote ref was verified with `git ls-remote` after dewing.
+The final closeout refresh is the current `main` ref, and its remote ref was verified with
+`git ls-remote` after dewing.
 
 State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
 clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
