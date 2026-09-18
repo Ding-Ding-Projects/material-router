@@ -8,7 +8,7 @@
 - [x] Preserve every named branch ref on the remote with `git ls-remote` verification.
 - [x] Verify every named branch tip is already an ancestor of `main` through two-parent merges.
 - [x] Create and verify the external archive before removing redundant linked checkouts and branches.
-- [ ] Push the final documentation refresh and verify the remote `main` ref.
+- [x] Push the final documentation refresh and verify the remote `main` ref.
 
 Status legend: `[x]` shipped and verified in this repository · `[ ]` planned or owned by an open lane.
 Items are never silently deleted; dropped ideas move to "Deliberately not doing" with a reason.
