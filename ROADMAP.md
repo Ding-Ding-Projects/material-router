@@ -9,7 +9,7 @@
 - [x] Confirm the historical linked checkout preservation refs with the recorded remote and ancestry evidence.
 - [x] Create and verify a fresh external archive before any possible removal.
 - [ ] Integrate or remove additional linked work only if a later inventory discovers a clean, pushed, task-owned candidate.
-- [ ] Push this documentation refresh and verify the remote `main` ref.
+- [x] Push this documentation refresh and verify the remote `main` ref.
 
 Status legend: `[x]` shipped and verified in this repository · `[ ]` planned or owned by an open lane.
 Items are never silently deleted; dropped ideas move to "Deliberately not doing" with a reason.
