@@ -1,14 +1,15 @@
 # Material Router - Roadmap
 
-## Repository closeout, 2026-09-18
+## Repository closeout refresh, 2026-09-18
 
-- [x] Inventory the primary checkout and all 13 named linked checkouts.
+- [x] Run a fresh read-only process and lock check before repository work.
 - [x] Fetch the remote refs before integration review.
-- [x] Verify every named checkout is clean and has no unmerged index entries or stash entries.
-- [x] Preserve every named branch ref on the remote with `git ls-remote` verification.
-- [x] Verify every named branch tip is already an ancestor of `main` through two-parent merges.
-- [x] Create and verify the external archive before removing redundant linked checkouts and branches.
-- [x] Push the final documentation refresh and verify the remote `main` ref.
+- [x] Inventory the primary checkout, linked checkout metadata, local branches, remote heads, tags, stashes, conflicts, and uncommitted paths.
+- [x] Verify the current primary checkout is clean, has no conflicts, and has no nonignored untracked paths.
+- [x] Confirm the historical linked checkout preservation refs with the recorded remote and ancestry evidence.
+- [x] Create and verify a fresh external archive before any possible removal.
+- [ ] Integrate or remove additional linked work only if a later inventory discovers a clean, pushed, task-owned candidate.
+- [ ] Push this documentation refresh and verify the remote `main` ref.
 
 Status legend: `[x]` shipped and verified in this repository · `[ ]` planned or owned by an open lane.
 Items are never silently deleted; dropped ideas move to "Deliberately not doing" with a reason.

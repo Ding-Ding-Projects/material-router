@@ -1,12 +1,18 @@
 # Handoff - Material Router
 
-## 2026-09-18 repository closeout
+## 2026-09-18 repository closeout refresh
 
-The primary checkout is `main` at `4850a71f59654afe587fd4ae42352a39e58056d8`, and it
-matches `origin/main` at this point in the closeout. The 13 linked feature branches named
-in the closeout inventory are already integrated into `main` through ordinary two-parent
-merge commits. No branch had uncommitted files, staged files, untracked files, conflict
-index entries, or stash entries when inspected.
+The primary checkout is `C:\Users\cntow\Documents\GitHub\material-router` on `main` at
+`626d154db1e8e4c1cf1a3efdafc8ae25b1ca49eb`, and it matches `origin/main`. A fresh
+read-only process check found no running Git process, no lock file, and no linked checkout
+admin metadata. The current inventory contains one checkout, one local branch, one remote
+head, the historical tags listed by `git show-ref`, no stash entries, no conflict index
+entries, 218 tracked paths, and no nonignored untracked paths.
+
+The 13 linked feature branches named in the earlier closeout inventory are already
+integrated into `main` through ordinary two-parent merge commits and are no longer present
+as local or remote heads. Their previous preservation refs and ancestry proofs remain
+documented below. No new linked checkout or branch was created or removed in this refresh.
 
 Preservation refs were verified with `git ls-remote` before cleanup. The preserved branch
 heads are:
@@ -42,13 +48,23 @@ any linked checkout or branch was removed:
 
 The archive is the deletion backstop for this closeout and is not part of the repository.
 
-Cleanup result: all 13 named linked checkout directories and their local and remote
-feature branches were removed after the proofs above. No item from the named inventory
-was retained. The only remaining checkout and branch are the primary `main` checkout and
-the remote `origin/main`, both at the final closeout commit recorded below.
+Fresh archive receipt for this refresh:
 
-The final closeout commit is the commit containing this section, and its remote ref was
-verified after the commit was pushed.
+- Path: `C:\Users\cntow\OneDrive\OakKayBackups\material-router\zips\material-router-20260918T183755Z.7z`
+- Size: `6,296,195` bytes
+- Listed entries: `867`
+- Git administration entries: `436`
+- Source paths included: `218` tracked, `0` nonignored untracked
+- Read-back checks: 7-Zip test exit `0`, listing exit `0`, `HANDOFF.md` and `ROADMAP.md` present
+- Scope: this repository only; ignored files and directories were excluded
+
+Cleanup result from the earlier closeout: all 13 named linked checkout directories and
+their local and remote feature branches were removed after the proofs above. The current
+refresh found no removable candidate. The only remaining checkout and branch are the
+primary `main` checkout and the remote `origin/main`, both at `626d154`.
+
+The final closeout refresh commit will be recorded below after the documents are
+committed and the remote ref is verified.
 
 State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
 clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
