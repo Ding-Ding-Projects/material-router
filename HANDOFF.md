@@ -30,8 +30,17 @@ heads are:
 Each preservation tip is an ancestor of the final `main` tip. The linked checkout paths
 are task-owned closeout candidates because they were explicitly placed in scope together.
 No separate user-owned, active, load-bearing, unmerged, unpublished, or ownership-uncertain
-work was found in the named set. The external archive path and verification receipt will
-be added below before any linked checkout or branch is removed.
+work was found in the named set. The external archive was created and read back before
+any linked checkout or branch was removed:
+
+- Path: `C:\Users\cntow\OneDrive\OakKayBackups\material-router\zips\material-router-20260918T174104Z.7z`
+- Size: `3,320,548` bytes
+- Listed entries: `3,324`
+- Git administration listed: yes
+- All 14 primary and linked Git metadata paths listed: yes
+- Excluded by Git ignore rules: ignored files and directories only
+
+The archive is the deletion backstop for this closeout and is not part of the repository.
 
 State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
 clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
@@ -49,7 +58,7 @@ pathToFileURL, MAIN_DIR for createWindow) are present.
 ```text
 npm install          # already done on this checkout; dev deps only
 npm start            # launch the Electron app
-npm test             # zero-dependency pure-core suite (node --test, 88 tests)
+npm test             # zero-dependency pure-core suite (node --test, 98 tests)
 npm run dist         # unsigned Squirrel installer -> dist/squirrel-windows/
 npm run icons        # regenerate brand assets (deterministic)
 npm run docs-index   # rebuild docs/articles/index.json
@@ -67,7 +76,7 @@ test or lint jobs by policy.
 ## Local test suite
 
 `npm test` runs `node --test` over `test/*.test.mjs` — node:test + node:assert only,
-zero new dependencies. Current verdict: **88 pass / 0 fail** on Windows, Node v24.19.0,
+zero new dependencies. Current verdict: **98 pass / 0 fail** on Windows, Node v24.19.0,
 four consecutive runs at the commit noted in git history. Coverage and boundaries:
 
 - `translator.js` — full-featured request translation both directions, OpenAI →
