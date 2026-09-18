@@ -42,6 +42,14 @@ any linked checkout or branch was removed:
 
 The archive is the deletion backstop for this closeout and is not part of the repository.
 
+Cleanup result: all 13 named linked checkout directories and their local and remote
+feature branches were removed after the proofs above. No item from the named inventory
+was retained. The only remaining checkout and branch are the primary `main` checkout and
+the remote `origin/main`, both at the final closeout commit recorded below.
+
+The final closeout commit is the commit containing this section, and its remote ref will
+be verified immediately after the commit is dewed.
+
 State: ALL NINE FEATURE LANES MERGED to this branch and syntax-gated (87 app modules
 clean). The gap-close pass (2026-08-22) landed on top of the integration commit: the
 authenticator offline article joined `docs/articles/` with its manifest regenerated,
